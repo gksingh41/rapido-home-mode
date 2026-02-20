@@ -65,38 +65,33 @@
     flex-shrink: 0;
   }
 
-  /* Single sliding toggle — Normal On Duty ← thumb → Go Home */
+  /* Three-state segmented toggle — Off Duty | On Duty | Go Home */
   .mode-switch {
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center;
     flex: 1; justify-content: center;
   }
-  .mode-switch .mode-label {
-    font-size: 11px; font-weight: 700; white-space: nowrap;
-    transition: color 0.3s;
+  .mode-seg {
+    position: relative; display: flex;
+    background: var(--gray-200); border-radius: 20px;
+    padding: 3px; gap: 2px;
   }
-  .mode-switch .mode-label.left { color: var(--green); }
-  .mode-switch .mode-label.right { color: var(--gray-400); }
-  .mode-switch.go-home .mode-label.left { color: var(--gray-400); }
-  .mode-switch.go-home .mode-label.right { color: var(--pink); }
-
-  .mode-track {
-    position: relative; width: 52px; height: 30px;
-    background: var(--green); border-radius: 15px;
-    cursor: pointer; transition: background 0.3s;
-    flex-shrink: 0;
+  .mode-seg-btn {
+    position: relative; z-index: 1;
+    padding: 6px 12px; border: none; background: none;
+    font-size: 11px; font-weight: 700; color: var(--gray-600);
+    cursor: pointer; border-radius: 17px;
+    transition: color 0.3s; white-space: nowrap;
+    font-family: inherit;
   }
-  .mode-switch.go-home .mode-track { background: var(--pink); }
-  .mode-track .mode-thumb {
-    position: absolute; top: 3px; left: 3px;
-    width: 24px; height: 24px; border-radius: 50%;
-    background: #fff; transition: transform 0.3s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
+  .mode-seg-btn.active { color: #fff; }
+  .mode-seg-slider {
+    position: absolute; top: 3px; bottom: 3px;
+    border-radius: 17px; transition: left 0.3s, width 0.3s, background 0.3s;
+    z-index: 0;
   }
-  .mode-switch.go-home .mode-track .mode-thumb {
-    transform: translateX(22px);
-  }
+  .mode-seg[data-state="off-duty"] .mode-seg-slider { background: var(--gray-600); }
+  .mode-seg[data-state="on-duty"] .mode-seg-slider { background: var(--green); }
+  .mode-seg[data-state="go-home"] .mode-seg-slider { background: var(--pink); }
 
   /* Active home strip below topbar */
   .home-active-strip {
@@ -844,11 +839,12 @@
   <div class="home-topbar max-w">
     <button class="hamburger">&#9776;</button>
     <div class="mode-switch" id="mode-switch">
-      <span class="mode-label left">On Duty</span>
-      <div class="mode-track" id="mode-track">
-        <div class="mode-thumb" id="mode-thumb"></div>
+      <div class="mode-seg" id="mode-seg" data-state="on-duty">
+        <div class="mode-seg-slider" id="mode-seg-slider"></div>
+        <button class="mode-seg-btn" data-mode="off-duty">Off Duty</button>
+        <button class="mode-seg-btn active" data-mode="on-duty">On Duty</button>
+        <button class="mode-seg-btn" data-mode="go-home">Go Home</button>
       </div>
-      <span class="mode-label right">Go Home</span>
     </div>
     <div class="right-icons">
       <button class="gta-icon-btn" id="home-gta-btn">
@@ -1323,18 +1319,65 @@ document.getElementById('order-nav-orders').addEventListener('click', () => {
   renderOrder();
 });
 
-// ===================== MODE TOGGLE (Normal On Duty ↔ Go Home) =====================
-let isOnDuty = true;
-const modeSwitch = document.getElementById('mode-switch');
-const modeTrack = document.getElementById('mode-track');
-const modeThumb = document.getElementById('mode-thumb');
+// ===================== MODE TOGGLE (Off Duty | On Duty | Go Home) =====================
+let dutyState = 'on-duty'; // 'off-duty' | 'on-duty' | 'go-home'
+const modeSeg = document.getElementById('mode-seg');
+const modeSlider = document.getElementById('mode-seg-slider');
+const modeSegBtns = modeSeg.querySelectorAll('.mode-seg-btn');
 
-modeTrack.addEventListener('click', function() {
-  const newMode = !goHomeMode;
-  modeSwitch.classList.toggle('go-home', newMode);
-  // thumb has no icon, just slides
-  setGoHomeMode(newMode);
+function positionModeSlider() {
+  const activeBtn = modeSeg.querySelector(`.mode-seg-btn[data-mode="${dutyState}"]`);
+  if (!activeBtn) return;
+  modeSlider.style.left = activeBtn.offsetLeft + 'px';
+  modeSlider.style.width = activeBtn.offsetWidth + 'px';
+}
+
+function setDutyState(state) {
+  // Block go-home if no home area tagged
+  if (state === 'go-home' && !getHomeArea()) {
+    showToast('Please add or tag a Home area in Go to Area settings', 'info');
+    return;
+  }
+
+  dutyState = state;
+  modeSeg.dataset.state = state;
+  modeSegBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === state));
+  positionModeSlider();
+
+  if (state === 'go-home') {
+    setGoHomeMode(true);
+  } else {
+    setGoHomeMode(false);
+  }
+  syncOffDutyUI();
+}
+
+function syncOffDutyUI() {
+  const body = document.body;
+  const homeContent = document.querySelector('#home-page .max-w');
+  if (dutyState === 'off-duty') {
+    document.getElementById('home-active-strip').classList.add('show');
+    document.getElementById('home-strip-text').textContent = 'You are Off Duty';
+    document.getElementById('home-active-strip').style.background = 'var(--gray-100)';
+    document.getElementById('home-active-strip').style.borderColor = 'var(--gray-300)';
+    document.getElementById('home-active-strip').style.color = 'var(--gray-600)';
+    document.getElementById('home-active-strip').querySelector('.strip-pulse').style.background = 'var(--gray-400)';
+  } else {
+    // Reset strip styling for go-home mode (pink) or hide
+    document.getElementById('home-active-strip').style.background = '';
+    document.getElementById('home-active-strip').style.borderColor = '';
+    document.getElementById('home-active-strip').style.color = '';
+    document.getElementById('home-active-strip').querySelector('.strip-pulse').style.background = '';
+  }
+}
+
+modeSegBtns.forEach(btn => {
+  btn.addEventListener('click', () => setDutyState(btn.dataset.mode));
 });
+
+// Position slider on load & resize
+window.addEventListener('resize', positionModeSlider);
+requestAnimationFrame(positionModeSlider);
 
 // ===================== SOUND TOGGLE =====================
 document.getElementById('sound-toggle').addEventListener('click', function() {
@@ -1388,6 +1431,7 @@ function renderSavedAreas() {
       const id = parseInt(e.target.dataset.id);
       savedAreas.forEach(a => a.active = (a.id === id && e.target.checked));
       renderSavedAreas();
+      syncAllGoHomeUI();
     });
   });
 
@@ -1401,6 +1445,7 @@ function renderSavedAreas() {
       if (area) {
         area.tag = newTag;
         renderSavedAreas();
+        syncAllGoHomeUI();
         showToast(`Tagged as ${newTag}`, 'success');
       }
     });
@@ -1448,6 +1493,7 @@ document.getElementById('confirm-delete').addEventListener('click', () => {
   if (deleteTargetId != null) {
     savedAreas = savedAreas.filter(a => a.id !== deleteTargetId);
     renderSavedAreas();
+    syncAllGoHomeUI();
     showToast('Area removed', 'info');
   }
   document.getElementById('confirm-overlay').classList.remove('show');
@@ -1545,6 +1591,21 @@ function setGoHomeMode(on) {
       savedAreas.forEach(a => a.active = (a.id === homeArea.id));
       renderSavedAreas();
     }
+    // Sync segmented toggle to go-home
+    if (dutyState !== 'go-home') {
+      dutyState = 'go-home';
+      modeSeg.dataset.state = 'go-home';
+      modeSegBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === 'go-home'));
+      positionModeSlider();
+    }
+  } else {
+    // When turning off go-home, switch back to on-duty
+    if (dutyState === 'go-home') {
+      dutyState = 'on-duty';
+      modeSeg.dataset.state = 'on-duty';
+      modeSegBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === 'on-duty'));
+      positionModeSlider();
+    }
   }
 
   syncAllGoHomeUI();
@@ -1552,8 +1613,22 @@ function setGoHomeMode(on) {
 }
 
 // Bind orders + GTA toggle handlers
-goHomeToggle.addEventListener('change', () => setGoHomeMode(goHomeToggle.checked));
-gtaGhmToggle.addEventListener('change', () => setGoHomeMode(gtaGhmToggle.checked));
+goHomeToggle.addEventListener('change', () => {
+  if (goHomeToggle.checked && !getHomeArea()) {
+    goHomeToggle.checked = false;
+    showToast('Please add or tag a Home area in Go to Area settings', 'info');
+    return;
+  }
+  setGoHomeMode(goHomeToggle.checked);
+});
+gtaGhmToggle.addEventListener('change', () => {
+  if (gtaGhmToggle.checked && !getHomeArea()) {
+    gtaGhmToggle.checked = false;
+    showToast('Please add or tag a Home area in Go to Area settings', 'info');
+    return;
+  }
+  setGoHomeMode(gtaGhmToggle.checked);
+});
 
 function syncAllGoHomeUI() {
   // Sync checkbox toggles (Orders + GTA pages)
@@ -1565,20 +1640,25 @@ function syncAllGoHomeUI() {
   const onSub = areaName ? `Filtering towards ${areaName}` : 'No home area saved';
   const offSub = 'Get orders towards home';
 
-  // --- Home page single toggle + strip ---
-  const modeSwitchEl = document.getElementById('mode-switch');
-  const modeThumbEl = document.getElementById('mode-thumb');
+  // --- Home page strip ---
   const homeStrip = document.getElementById('home-active-strip');
   const homeStripText = document.getElementById('home-strip-text');
 
-  modeSwitchEl.classList.toggle('go-home', goHomeMode);
-  // thumb synced via CSS class only
-
-  if (goHomeMode && areaName) {
+  if (dutyState === 'off-duty') {
+    // Off-duty strip is handled by syncOffDutyUI, keep it showing
+  } else if (goHomeMode && areaName) {
     homeStrip.classList.add('show');
+    homeStrip.style.background = '';
+    homeStrip.style.borderColor = '';
+    homeStrip.style.color = '';
+    homeStrip.querySelector('.strip-pulse').style.background = '';
     homeStripText.textContent = `🏠 Go Home Mode · ${areaName}`;
   } else if (goHomeMode) {
     homeStrip.classList.add('show');
+    homeStrip.style.background = '';
+    homeStrip.style.borderColor = '';
+    homeStrip.style.color = '';
+    homeStrip.querySelector('.strip-pulse').style.background = '';
     homeStripText.textContent = '🏠 Go Home Mode active · No home area saved';
   } else {
     homeStrip.classList.remove('show');
@@ -1682,6 +1762,8 @@ document.getElementById('order-decline').addEventListener('click', () => {
 renderSavedAreas();
 syncAllGoHomeUI();
 showPage('home-page');
+// Position segmented slider after DOM layout
+requestAnimationFrame(() => positionModeSlider());
 </script>
 </body>
 </html>
