@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Rapido - Go to Area</title>
+<style>
+  :root {
+    --pink: #FF6B9D;
+    --pink-light: #FFF0F5;
+    --pink-bg: #FFE4EE;
+    --yellow: #FFC107;
+    --yellow-dark: #F5A623;
+    --dark: #1A1A2E;
+    --darker: #12122A;
+    --card-dark: #222240;
+    --card-dark-hover: #2A2A4A;
+    --green: #00C853;
+    --green-dim: rgba(0,200,83,0.12);
+    --red: #FF5252;
+    --red-dim: rgba(255,82,82,0.1);
+    --blue: #448AFF;
+    --gray-50: #FAFAFA;
+    --gray-100: #F5F5F5;
+    --gray-200: #EEEEEE;
+    --gray-300: #E0E0E0;
+    --gray-400: #BDBDBD;
+    --gray-600: #757575;
+    --gray-800: #333333;
+    --gray-900: #212121;
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #fff;
+    color: var(--gray-900);
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .max-w { max-width: 480px; margin: 0 auto; }
+
+  /* ============================================================
+     SCREEN 1 — GTA SETTINGS (Light theme)
+     ============================================================ */
+  #gta-page { background: var(--gray-50); min-height: 100vh; }
+
+  /* Top bar */
+  .gta-topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .gta-topbar .back-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: none; background: var(--gray-100); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--gray-800);
+  }
+  .gta-topbar .back-btn:active { background: var(--gray-200); }
+  .gta-topbar h1 { font-size: 18px; font-weight: 600; }
+
+  /* Pink banner */
+  .gta-banner {
+    background: linear-gradient(135deg, var(--pink) 0%, #FF8EB5 100%);
+    margin: 16px; border-radius: var(--radius);
+    padding: 18px 20px; display: flex; align-items: center; gap: 14px;
+    color: #fff; box-shadow: 0 4px 16px rgba(255,107,157,0.25);
+  }
+  .gta-banner .heart {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,0.25); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .gta-banner p { font-size: 14px; font-weight: 500; line-height: 1.45; }
+
+  /* Checkbox row */
+  .gta-checkbox-row {
+    margin: 0 16px; padding: 16px 0;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .checkbox-custom {
+    width: 22px; height: 22px; border-radius: 6px;
+    border: 2px solid var(--gray-400); background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0; transition: all 0.2s;
+  }
+  .checkbox-custom.checked {
+    background: var(--pink); border-color: var(--pink);
+  }
+  .checkbox-custom .check-icon {
+    color: #fff; font-size: 14px; font-weight: 700;
+    display: none;
+  }
+  .checkbox-custom.checked .check-icon { display: block; }
+  .gta-checkbox-row span { font-size: 15px; font-weight: 500; color: var(--gray-800); }
+
+  /* Section header */
+  .gta-section-header {
+    padding: 20px 16px 10px;
+    font-size: 13px; font-weight: 600; color: var(--gray-600);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .gta-section-header small {
+    font-weight: 400; text-transform: none;
+    letter-spacing: 0; color: var(--gray-400); font-size: 12px;
+  }
+
+  /* Area card */
+  .area-card {
+    background: #fff; margin: 0 16px 10px; border-radius: 12px;
+    padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border: 1.5px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .area-card.active { border-color: var(--pink); }
+  .area-card .area-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .area-icon.home-icon { background: #FFF3E0; }
+  .area-icon.office-icon { background: #E3F2FD; }
+  .area-card .area-info { flex: 1; min-width: 0; }
+  .area-card .area-tag {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.3px; margin-bottom: 2px;
+  }
+  .area-tag.home-tag { color: #E65100; }
+  .area-tag.office-tag { color: #1565C0; }
+  .area-card .area-name {
+    font-size: 14px; font-weight: 500; color: var(--gray-800);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .area-card .area-sub {
+    font-size: 12px; color: var(--gray-600); margin-top: 1px;
+  }
+  .area-card .area-actions {
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  }
+  .area-delete {
+    font-size: 12px; color: var(--red); font-weight: 600;
+    cursor: pointer; padding: 4px 8px; border-radius: 6px;
+    border: none; background: var(--red-dim);
+    transition: opacity 0.2s;
+  }
+  .area-delete:active { opacity: 0.6; }
+
+  /* Mini switch (pink themed) */
+  .switch-mini {
+    position: relative; width: 46px; height: 26px;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .switch-mini input { display: none; }
+  .switch-mini .slider-m {
+    position: absolute; inset: 0; background: var(--gray-300);
+    border-radius: 13px; transition: background 0.3s;
+  }
+  .switch-mini .slider-m::after {
+    content: ''; position: absolute; width: 20px; height: 20px;
+    background: #fff; border-radius: 50%; top: 3px; left: 3px;
+    transition: transform 0.3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .switch-mini input:checked + .slider-m { background: var(--pink); }
+  .switch-mini input:checked + .slider-m::after { transform: translateX(20px); }
+
+  /* Add area button */
+  .add-area-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin: 20px 16px; padding: 14px;
+    border: 2px dashed var(--gray-300); border-radius: 12px;
+    background: #fff; cursor: pointer; font-size: 15px;
+    font-weight: 600; color: var(--pink);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .add-area-btn:active { background: var(--pink-light); border-color: var(--pink); }
+  .add-area-btn .plus { font-size: 20px; }
+
+  /* Hint text */
+  .gta-hint {
+    text-align: center; padding: 12px 32px 24px;
+    font-size: 13px; color: var(--gray-400); line-height: 1.5;
+  }
+
+  /* Go to Orders button (fixed bottom) */
+  .gta-bottom-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff; padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--gray-200);
+    z-index: 10;
+  }
+  .gta-bottom-bar .max-w { display: flex; gap: 10px; }
+  .btn-go-orders {
+    flex: 1; padding: 15px; border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .btn-go-orders:active { transform: scale(0.97); }
+  .btn-go-orders.primary { background: var(--yellow); color: var(--gray-900); }
+  .btn-go-orders.secondary {
+    background: var(--gray-100); color: var(--gray-600);
+    flex: 0 0 auto; padding: 15px 20px;
+  }
+
+  /* ============================================================
+     SCREEN 2 — ADD / EDIT AREA (Light modal-like)
+     ============================================================ */
+  #add-area-page { display: none; background: var(--gray-50); min-height: 100vh; }
+
+  .add-topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .add-topbar .back-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: none; background: var(--gray-100); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--gray-800);
+  }
+  .add-topbar h1 { font-size: 18px; font-weight: 600; }
+
+  /* Tag selector */
+  .tag-section {
+    padding: 20px 16px 12px;
+  }
+  .tag-section label {
+    font-size: 13px; font-weight: 600; color: var(--gray-600);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    display: block; margin-bottom: 12px;
+  }
+  .tag-options { display: flex; gap: 10px; }
+  .tag-option {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 8px; padding: 16px 12px;
+    border-radius: 12px; border: 2px solid var(--gray-200);
+    background: #fff; cursor: pointer; transition: all 0.2s;
+  }
+  .tag-option:active { transform: scale(0.97); }
+  .tag-option.selected { border-color: var(--pink); background: var(--pink-light); }
+  .tag-option .tag-emoji { font-size: 28px; }
+  .tag-option .tag-name { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+
+  /* Search input (light) */
+  .search-section { padding: 0 16px; }
+  .search-section label {
+    font-size: 13px; font-weight: 600; color: var(--gray-600);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    display: block; margin-bottom: 8px;
+  }
+  .search-wrap {
+    position: relative;
+  }
+  .search-input {
+    width: 100%; padding: 14px 16px 14px 42px;
+    border: 1.5px solid var(--gray-300); border-radius: var(--radius-sm);
+    background: #fff; color: var(--gray-900); font-size: 15px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--pink); }
+  .search-input::placeholder { color: var(--gray-400); }
+  .search-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 16px; color: var(--gray-400);
+  }
+
+  .search-results {
+    margin-top: 6px; border-radius: var(--radius-sm);
+    background: #fff; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid var(--gray-200);
+    display: none;
+  }
+  .search-results.show { display: block; }
+  .search-result-item {
+    padding: 14px 16px; cursor: pointer;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex; align-items: center; gap: 12px;
+    transition: background 0.15s;
+  }
+  .search-result-item:last-child { border-bottom: none; }
+  .search-result-item:active { background: var(--gray-100); }
+  .search-result-item .loc-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--gray-100); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 14px; color: var(--gray-600); flex-shrink: 0;
+  }
+  .search-result-item .loc-info { flex: 1; }
+  .search-result-item .loc-name { font-size: 14px; font-weight: 500; }
+  .search-result-item .loc-area { font-size: 12px; color: var(--gray-600); margin-top: 1px; }
+
+  /* Selected location preview */
+  .selected-location {
+    margin: 16px; padding: 16px; background: #fff;
+    border-radius: 12px; border: 1.5px solid var(--green);
+    display: none; gap: 12px; align-items: center;
+  }
+  .selected-location.show { display: flex; }
+  .selected-location .sel-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--green-dim); color: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .selected-location .sel-info { flex: 1; }
+  .selected-location .sel-name { font-size: 15px; font-weight: 600; }
+  .selected-location .sel-area { font-size: 12px; color: var(--gray-600); }
+  .selected-location .sel-clear {
+    border: none; background: none; font-size: 18px;
+    color: var(--gray-400); cursor: pointer; padding: 4px;
+  }
+
+  /* Save button */
+  .save-area-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff; padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--gray-200); z-index: 10;
+  }
+  .btn-save-area {
+    width: 100%; padding: 15px; border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    background: var(--pink); color: #fff;
+    transition: transform 0.1s, opacity 0.2s;
+  }
+  .btn-save-area:active { transform: scale(0.97); }
+  .btn-save-area:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+  /* ============================================================
+     SCREEN 3 — ORDERS DASHBOARD (Dark theme)
+     ============================================================ */
+  #orders-page {
+    display: none; background: var(--dark);
+    color: #F0F0F5; min-height: 100vh;
+  }
+
+  .orders-header {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--darker);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .orders-header-inner { max-width: 480px; margin: 0 auto; padding: 0 16px; }
+
+  .orders-topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 0;
+  }
+  .orders-topbar .back-btn-dark {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: none; background: rgba(255,255,255,0.08); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: #F0F0F5;
+  }
+  .orders-topbar .back-btn-dark:active { background: rgba(255,255,255,0.15); }
+  .orders-topbar h2 { font-size: 18px; font-weight: 700; color: #F0F0F5; flex: 1; }
+  .orders-topbar .home-pill {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border-radius: 20px;
+    background: rgba(255,255,255,0.08); font-size: 12px;
+    color: rgba(255,255,255,0.6);
+  }
+  .orders-topbar .home-pill .pill-name {
+    max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* GTA active banner in orders */
+  .gta-active-strip {
+    display: none; align-items: center; gap: 10px;
+    padding: 10px 16px; margin: 0 0 2px;
+    background: linear-gradient(135deg, rgba(255,107,157,0.15), rgba(255,107,157,0.05));
+    border-radius: 10px;
+  }
+  .gta-active-strip.show { display: flex; }
+  .gta-active-strip .strip-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--pink);
+    animation: pulse 1.5s infinite;
+  }
+  .gta-active-strip .strip-text {
+    font-size: 13px; font-weight: 600; color: var(--pink); flex: 1;
+  }
+  .gta-active-strip .strip-loc {
+    font-size: 12px; color: rgba(255,255,255,0.5);
+  }
+
+  /* Toggle bar in orders */
+  .toggle-bar-dark {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--card-dark); border-radius: 12px;
+    padding: 12px 16px; margin: 8px 0 4px;
+  }
+  .toggle-label-dark { display: flex; flex-direction: column; }
+  .toggle-label-dark .tl-title {
+    font-size: 15px; font-weight: 600; color: #F0F0F5;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .toggle-label-dark .tl-sub {
+    font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 2px;
+  }
+
+  .switch-dark {
+    position: relative; width: 52px; height: 30px;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .switch-dark input { display: none; }
+  .switch-dark .slider-d {
+    position: absolute; inset: 0; background: rgba(255,255,255,0.12);
+    border-radius: 15px; transition: background 0.3s;
+  }
+  .switch-dark .slider-d::after {
+    content: ''; position: absolute; width: 24px; height: 24px;
+    background: #fff; border-radius: 50%; top: 3px; left: 3px;
+    transition: transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  .switch-dark input:checked + .slider-d { background: var(--green); }
+  .switch-dark input:checked + .slider-d::after { transform: translateX(22px); }
+
+  /* Stats row */
+  .stats-row-dark {
+    display: flex; gap: 10px; padding: 12px 0 8px;
+  }
+  .stat-d {
+    flex: 1; text-align: center; padding: 10px 6px;
+    background: var(--card-dark); border-radius: 10px;
+  }
+  .stat-d .sv { font-size: 18px; font-weight: 700; color: #F0F0F5; }
+  .stat-d .sl { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+  /* Orders list */
+  .orders-body {
+    max-width: 480px; margin: 0 auto;
+    padding: 8px 16px 100px;
+  }
+  .section-lbl {
+    font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.4);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 10px 0 6px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-lbl .cnt {
+    background: rgba(255,255,255,0.08); border-radius: 10px;
+    padding: 2px 8px; font-size: 11px;
+  }
+
+  .o-card {
+    background: var(--card-dark); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 12px;
+    position: relative; overflow: hidden;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .o-card.towards { border-left: 3px solid var(--green); }
+  .o-card.away { border-left: 3px solid rgba(255,255,255,0.1); }
+
+  .o-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .o-id { font-size: 12px; color: rgba(255,255,255,0.35); }
+  .o-earn { font-size: 18px; font-weight: 700; color: var(--green); }
+  .o-earn small { font-size: 11px; color: rgba(255,255,255,0.35); font-weight: 400; }
+
+  .o-route { display: flex; gap: 12px; margin-bottom: 14px; }
+  .o-dots { display: flex; flex-direction: column; align-items: center; padding: 4px 0; }
+  .o-dots .d { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .o-dots .d.pk { background: var(--blue); }
+  .o-dots .d.dr { background: var(--green); }
+  .o-dots .ln { width: 2px; flex: 1; min-height: 20px; background: rgba(255,255,255,0.1); }
+  .o-pts { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .o-pt .o-pl {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    color: rgba(255,255,255,0.35); letter-spacing: 0.3px;
+  }
+  .o-pt .o-pa { font-size: 14px; font-weight: 500; color: #F0F0F5; margin-top: 2px; }
+
+  .o-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+  .o-chip {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 12px; color: rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 8px;
+  }
+  .o-chip.closer { background: var(--green-dim); color: var(--green); font-weight: 600; }
+  .o-chip.farther { background: var(--red-dim); color: var(--red); }
+
+  .o-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .o-actions .o-btn {
+    flex: 1; padding: 11px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    border: none; transition: transform 0.1s;
+  }
+  .o-actions .o-btn:active { transform: scale(0.97); }
+  .o-btn.decline {
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .o-btn.accept { background: var(--yellow); color: var(--gray-900); }
+
+  .timer-bar {
+    position: absolute; bottom: 0; left: 0; height: 3px;
+    background: var(--yellow); border-radius: 0 3px 0 0;
+    animation: timerShrink 30s linear forwards;
+  }
+
+  .empty-state-dark {
+    text-align: center; padding: 60px 20px;
+    color: rgba(255,255,255,0.35);
+  }
+  .empty-state-dark .es-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state-dark p { font-size: 14px; line-height: 1.5; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+    padding: 14px 24px; border-radius: 12px;
+    font-weight: 600; font-size: 14px; z-index: 100;
+    transition: transform 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--green); color: #fff; }
+  .toast.info { background: var(--pink); color: #fff; }
+
+  /* Animations */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in { animation: fadeInUp 0.3s ease both; }
+  @keyframes timerShrink {
+    from { width: 100%; }
+    to { width: 0; }
+  }
+
+  /* Confirm dialog */
+  .confirm-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 50; display: none; align-items: flex-end;
+    justify-content: center;
+  }
+  .confirm-overlay.show { display: flex; }
+  .confirm-sheet {
+    background: #fff; width: 100%; max-width: 480px;
+    border-radius: 20px 20px 0 0; padding: 24px 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .confirm-sheet h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .confirm-sheet p { font-size: 14px; color: var(--gray-600); margin-bottom: 20px; }
+  .confirm-btns { display: flex; gap: 10px; }
+  .confirm-btns button {
+    flex: 1; padding: 13px; border-radius: 12px; font-size: 15px;
+    font-weight: 600; border: none; cursor: pointer;
+  }
+  .confirm-btns .c-cancel { background: var(--gray-100); color: var(--gray-800); }
+  .confirm-btns .c-delete { background: var(--red); color: #fff; }
+
+  @media (max-width: 360px) {
+    .gta-banner { padding: 14px 16px; }
+    .o-earn { font-size: 16px; }
+    .stat-d .sv { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== PAGE 1: GTA SETTINGS ==================== -->
+<div id="gta-page">
+  <div class="gta-topbar max-w">
+    <button class="back-btn" id="gta-back-btn">&#8592;</button>
+    <h1>Go to Area</h1>
+  </div>
+
+  <div class="max-w">
+    <!-- Pink banner -->
+    <div class="gta-banner">
+      <div class="heart">&#10084;</div>
+      <p>Get orders to your home or anywhere you want to go</p>
+    </div>
+
+    <!-- Checkbox -->
+    <div class="gta-checkbox-row" id="gta-only-row">
+      <div class="checkbox-custom" id="gta-only-check">
+        <span class="check-icon">&#10003;</span>
+      </div>
+      <span>See only Go to Area orders</span>
+    </div>
+
+    <!-- Saved areas -->
+    <div class="gta-section-header">
+      Saved drop areas <small>(Switch ON up to 1 area)</small>
+    </div>
+    <div id="saved-areas-list"></div>
+
+    <!-- Add new area -->
+    <div class="add-area-btn" id="add-area-btn">
+      <span class="plus">+</span> Add new area
+    </div>
+
+    <div class="gta-hint">
+      Save your frequently visited areas and toggle them on to receive orders headed that direction.
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="gta-bottom-bar">
+    <div class="max-w">
+      <button class="btn-go-orders primary" id="go-orders-btn">View Orders</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 2: ADD AREA ==================== -->
+<div id="add-area-page">
+  <div class="add-topbar max-w">
+    <button class="back-btn" id="add-back-btn">&#8592;</button>
+    <h1>Add New Area</h1>
+  </div>
+
+  <div class="max-w">
+    <!-- Tag selector -->
+    <div class="tag-section">
+      <label>Tag this location</label>
+      <div class="tag-options">
+        <div class="tag-option selected" data-tag="home">
+          <span class="tag-emoji">🏠</span>
+          <span class="tag-name">Home</span>
+        </div>
+        <div class="tag-option" data-tag="office">
+          <span class="tag-emoji">🏢</span>
+          <span class="tag-name">Office</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-section">
+      <label>Search location</label>
+      <div class="search-wrap">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" class="search-input" id="area-search"
+          placeholder="Search Koramangala, BTM, HSR..." autocomplete="off" />
+      </div>
+      <div class="search-results" id="area-results"></div>
+    </div>
+
+    <!-- Selected preview -->
+    <div class="selected-location" id="sel-preview">
+      <div class="sel-icon">&#10003;</div>
+      <div class="sel-info">
+        <div class="sel-name" id="sel-name"></div>
+        <div class="sel-area">Bangalore, Karnataka</div>
+      </div>
+      <button class="sel-clear" id="sel-clear">&times;</button>
+    </div>
+  </div>
+
+  <!-- Save button -->
+  <div class="save-area-bar">
+    <div class="max-w">
+      <button class="btn-save-area" id="save-area-btn" disabled>Save Area</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 3: ORDERS ==================== -->
+<div id="orders-page">
+  <div class="orders-header">
+    <div class="orders-header-inner">
+      <div class="orders-topbar">
+        <button class="back-btn-dark" id="orders-back-btn">&#8592;</button>
+        <h2>Orders</h2>
+        <div class="home-pill" id="orders-home-pill" style="display:none;">
+          🏠 <span class="pill-name" id="orders-pill-name"></span>
+        </div>
+      </div>
+
+      <div class="gta-active-strip" id="gta-strip">
+        <div class="strip-dot"></div>
+        <span class="strip-text">Go to Area active</span>
+        <span class="strip-loc" id="strip-loc"></span>
+      </div>
+
+      <div class="toggle-bar-dark">
+        <div class="toggle-label-dark">
+          <div class="tl-title">🏠 Go Home Mode</div>
+          <div class="tl-sub" id="toggle-sub">Show all orders</div>
+        </div>
+        <label class="switch-dark">
+          <input type="checkbox" id="home-toggle">
+          <span class="slider-d"></span>
+        </label>
+      </div>
+
+      <div class="stats-row-dark" id="stats-row"></div>
+    </div>
+  </div>
+
+  <div class="orders-body" id="orders-container"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Confirm dialog -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-sheet">
+    <h3>Delete area?</h3>
+    <p id="confirm-text">Are you sure you want to remove this saved area?</p>
+    <div class="confirm-btns">
+      <button class="c-cancel" id="confirm-cancel">Cancel</button>
+      <button class="c-delete" id="confirm-delete">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const LOCATIONS = [
+  { name: "Koramangala 1st Block", lat: 12.9352, lng: 77.6245 },
+  { name: "Koramangala 2nd Block", lat: 12.9340, lng: 77.6260 },
+  { name: "Koramangala 3rd Block", lat: 12.9330, lng: 77.6220 },
+  { name: "Koramangala 4th Block", lat: 12.9365, lng: 77.6195 },
+  { name: "Koramangala 5th Block", lat: 12.9346, lng: 77.6150 },
+  { name: "Koramangala 6th Block", lat: 12.9355, lng: 77.6180 },
+  { name: "Koramangala 7th Block", lat: 12.9308, lng: 77.6205 },
+  { name: "Koramangala 8th Block", lat: 12.9280, lng: 77.6230 },
+  { name: "Forum Mall, Koramangala", lat: 12.9344, lng: 77.6101 },
+  { name: "Jyoti Nivas College Road", lat: 12.9349, lng: 77.6168 },
+  { name: "Sony World Junction", lat: 12.9345, lng: 77.6106 },
+  { name: "Madiwala", lat: 12.9226, lng: 77.6174 },
+  { name: "BTM Layout 1st Stage", lat: 12.9166, lng: 77.6101 },
+  { name: "BTM Layout 2nd Stage", lat: 12.9120, lng: 77.6165 },
+  { name: "HSR Layout Sector 1", lat: 12.9116, lng: 77.6389 },
+  { name: "HSR Layout Sector 4", lat: 12.9080, lng: 77.6420 },
+  { name: "Indiranagar 100 Ft Road", lat: 12.9784, lng: 77.6408 },
+  { name: "Indiranagar 12th Main", lat: 12.9719, lng: 77.6412 },
+  { name: "Domlur", lat: 12.9610, lng: 77.6387 },
+  { name: "Ejipura", lat: 12.9500, lng: 77.6250 },
+  { name: "Jayanagar 4th Block", lat: 12.9250, lng: 77.5838 },
+  { name: "JP Nagar 6th Phase", lat: 12.9010, lng: 77.5855 },
+  { name: "Silk Board Junction", lat: 12.9177, lng: 77.6233 },
+  { name: "Marathahalli Bridge", lat: 12.9591, lng: 77.7009 },
+  { name: "Whitefield Main Road", lat: 12.9698, lng: 77.7500 },
+  { name: "MG Road", lat: 12.9756, lng: 77.6068 },
+  { name: "Brigade Road", lat: 12.9716, lng: 77.6070 },
+  { name: "Bellandur Gate", lat: 12.9260, lng: 77.6762 },
+  { name: "Sarjapur Road, Wipro Junction", lat: 12.9109, lng: 77.6835 },
+  { name: "Electronic City Phase 1", lat: 12.8456, lng: 77.6603 },
+];
+
+const RESTAURANTS = [
+  "Meghana Foods", "Truffles", "Empire Restaurant", "Third Wave Coffee",
+  "Toit Brewpub", "Chinita", "Byg Brewski", "A2B Adyar Ananda Bhavan",
+  "Leon's Grill", "Onesta", "Swiggy Instamart Store", "Blinkit Dark Store",
+  "Dmart Ready", "Fresh Menu Cloud Kitchen", "Behrouz Biryani"
+];
+
+// ===================== STATE =====================
+let savedAreas = [
+  { id: 1, tag: 'home', name: 'Koramangala 5th Block', lat: 12.9346, lng: 77.6150, active: true },
+];
+let gtaOnlyFilter = true;
+let goHomeOn = false;
+let orders = [];
+let acceptedCount = 0;
+let totalEarnings = 0;
+let orderIdCounter = 1000;
+let ordersInterval = null;
+
+// editing state
+let editTag = 'home';
+let editLocation = null;
+let deleteTargetId = null;
+
+// ===================== HELPERS =====================
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 +
+    Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function getActiveArea() {
+  return savedAreas.find(a => a.active) || null;
+}
+
+function distToArea(lat, lng) {
+  const area = getActiveArea();
+  if (!area) return 999;
+  return haversine(lat, lng, area.lat, area.lng);
+}
+
+function shortName(name) {
+  return name.replace('Koramangala ', 'Kor. ').replace(', Wipro Junction', '');
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===================== NAVIGATION =====================
+function showPage(id) {
+  ['gta-page', 'add-area-page', 'orders-page'].forEach(p => {
+    document.getElementById(p).style.display = p === id ? '' : 'none';
+  });
+  // Change body bg based on page
+  document.body.style.background = id === 'orders-page' ? '#1A1A2E' : '#FAFAFA';
+}
+
+// ===================== GTA PAGE =====================
+function renderSavedAreas() {
+  const list = document.getElementById('saved-areas-list');
+  if (savedAreas.length === 0) {
+    list.innerHTML = `<div style="text-align:center; padding:20px; color:#BDBDBD; font-size:14px;">
+      No saved areas yet. Tap "Add new area" below.
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = savedAreas.map(a => {
+    const isHome = a.tag === 'home';
+    return `
+      <div class="area-card ${a.active ? 'active' : ''}" data-id="${a.id}">
+        <div class="area-icon ${isHome ? 'home-icon' : 'office-icon'}">
+          ${isHome ? '🏠' : '🏢'}
+        </div>
+        <div class="area-info">
+          <div class="area-tag ${isHome ? 'home-tag' : 'office-tag'}">
+            ${a.tag.toUpperCase()}
+          </div>
+          <div class="area-name">${a.name}</div>
+          <div class="area-sub">Bangalore, Karnataka</div>
+        </div>
+        <div class="area-actions">
+          <button class="area-delete" data-id="${a.id}">Delete</button>
+          <label class="switch-mini">
+            <input type="checkbox" ${a.active ? 'checked' : ''} data-id="${a.id}" class="area-toggle">
+            <span class="slider-m"></span>
+          </label>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Bind toggles
+  list.querySelectorAll('.area-toggle').forEach(toggle => {
+    toggle.addEventListener('change', (e) => {
+      const id = parseInt(e.target.dataset.id);
+      // Only 1 active at a time
+      savedAreas.forEach(a => a.active = (a.id === id && e.target.checked));
+      renderSavedAreas();
+    });
+  });
+
+  // Bind deletes
+  list.querySelectorAll('.area-delete').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteTargetId = parseInt(btn.dataset.id);
+      const area = savedAreas.find(a => a.id === deleteTargetId);
+      document.getElementById('confirm-text').textContent =
+        `Remove "${area.name}" from your saved areas?`;
+      document.getElementById('confirm-overlay').classList.add('show');
+    });
+  });
+}
+
+// GTA-only checkbox
+const gtaOnlyCheck = document.getElementById('gta-only-check');
+gtaOnlyCheck.classList.add('checked'); // default on
+document.getElementById('gta-only-row').addEventListener('click', () => {
+  gtaOnlyFilter = !gtaOnlyFilter;
+  gtaOnlyCheck.classList.toggle('checked', gtaOnlyFilter);
+});
+
+// Add area button
+document.getElementById('add-area-btn').addEventListener('click', () => {
+  editTag = 'home';
+  editLocation = null;
+  document.getElementById('area-search').value = '';
+  document.getElementById('area-results').classList.remove('show');
+  document.getElementById('sel-preview').classList.remove('show');
+  document.getElementById('save-area-btn').disabled = true;
+  document.querySelectorAll('.tag-option').forEach(t => {
+    t.classList.toggle('selected', t.dataset.tag === 'home');
+  });
+  showPage('add-area-page');
+});
+
+// Go to orders
+document.getElementById('go-orders-btn').addEventListener('click', () => {
+  openOrdersPage();
+});
+
+// Back from GTA (just show toast - this is the entry point)
+document.getElementById('gta-back-btn').addEventListener('click', () => {
+  showToast('This is the main entry screen', 'info');
+});
+
+// Delete confirm
+document.getElementById('confirm-cancel').addEventListener('click', () => {
+  document.getElementById('confirm-overlay').classList.remove('show');
+  deleteTargetId = null;
+});
+document.getElementById('confirm-delete').addEventListener('click', () => {
+  if (deleteTargetId != null) {
+    savedAreas = savedAreas.filter(a => a.id !== deleteTargetId);
+    renderSavedAreas();
+    showToast('Area removed', 'info');
+  }
+  document.getElementById('confirm-overlay').classList.remove('show');
+  deleteTargetId = null;
+});
+
+// ===================== ADD AREA PAGE =====================
+// Tag selection
+document.querySelectorAll('.tag-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    editTag = opt.dataset.tag;
+    document.querySelectorAll('.tag-option').forEach(t =>
+      t.classList.toggle('selected', t.dataset.tag === editTag));
+  });
+});
+
+// Search
+const areaSearch = document.getElementById('area-search');
+const areaResults = document.getElementById('area-results');
+
+areaSearch.addEventListener('input', () => {
+  const q = areaSearch.value.toLowerCase().trim();
+  if (q.length < 2) { areaResults.classList.remove('show'); return; }
+
+  const matches = LOCATIONS.filter(l => l.name.toLowerCase().includes(q)).slice(0, 6);
+  if (!matches.length) { areaResults.classList.remove('show'); return; }
+
+  areaResults.innerHTML = matches.map(l => `
+    <div class="search-result-item" data-name="${l.name}" data-lat="${l.lat}" data-lng="${l.lng}">
+      <div class="loc-icon">📍</div>
+      <div class="loc-info">
+        <div class="loc-name">${l.name}</div>
+        <div class="loc-area">Bangalore, Karnataka</div>
+      </div>
+    </div>
+  `).join('');
+  areaResults.classList.add('show');
+
+  areaResults.querySelectorAll('.search-result-item').forEach(item => {
+    item.addEventListener('click', () => {
+      editLocation = {
+        name: item.dataset.name,
+        lat: parseFloat(item.dataset.lat),
+        lng: parseFloat(item.dataset.lng),
+      };
+      areaSearch.value = editLocation.name;
+      areaResults.classList.remove('show');
+      document.getElementById('sel-name').textContent = editLocation.name;
+      document.getElementById('sel-preview').classList.add('show');
+      document.getElementById('save-area-btn').disabled = false;
+    });
+  });
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-wrap') && !e.target.closest('.search-results')) {
+    areaResults.classList.remove('show');
+  }
+});
+
+// Clear selection
+document.getElementById('sel-clear').addEventListener('click', () => {
+  editLocation = null;
+  areaSearch.value = '';
+  document.getElementById('sel-preview').classList.remove('show');
+  document.getElementById('save-area-btn').disabled = true;
+});
+
+// Save area
+document.getElementById('save-area-btn').addEventListener('click', () => {
+  if (!editLocation) return;
+  const newId = Date.now();
+  // Deactivate others if this is going to be active
+  savedAreas.forEach(a => a.active = false);
+  savedAreas.push({
+    id: newId,
+    tag: editTag,
+    name: editLocation.name,
+    lat: editLocation.lat,
+    lng: editLocation.lng,
+    active: true,
+  });
+  renderSavedAreas();
+  showPage('gta-page');
+  showToast(`${editLocation.name} saved as ${editTag}!`);
+});
+
+// Back from add
+document.getElementById('add-back-btn').addEventListener('click', () => {
+  showPage('gta-page');
+});
+
+// ===================== ORDERS PAGE =====================
+function openOrdersPage() {
+  showPage('orders-page');
+  const area = getActiveArea();
+
+  // Update header
+  const pill = document.getElementById('orders-home-pill');
+  const strip = document.getElementById('gta-strip');
+
+  if (area) {
+    pill.style.display = 'flex';
+    document.getElementById('orders-pill-name').textContent = shortName(area.name);
+    strip.classList.add('show');
+    document.getElementById('strip-loc').textContent = shortName(area.name);
+    // Sync toggle with GTA checkbox
+    goHomeOn = gtaOnlyFilter;
+    document.getElementById('home-toggle').checked = goHomeOn;
+    updateToggleSub();
+  } else {
+    pill.style.display = 'none';
+    strip.classList.remove('show');
+    goHomeOn = false;
+    document.getElementById('home-toggle').checked = false;
+    updateToggleSub();
+  }
+
+  generateOrders();
+  renderStats();
+  renderOrders();
+
+  if (ordersInterval) clearInterval(ordersInterval);
+  ordersInterval = setInterval(addNewOrder, 12000);
+}
+
+document.getElementById('orders-back-btn').addEventListener('click', () => {
+  if (ordersInterval) clearInterval(ordersInterval);
+  showPage('gta-page');
+});
+
+// Toggle
+const homeToggle = document.getElementById('home-toggle');
+homeToggle.addEventListener('change', () => {
+  goHomeOn = homeToggle.checked;
+  updateToggleSub();
+  renderStats();
+  renderOrders();
+});
+
+function updateToggleSub() {
+  const area = getActiveArea();
+  const sub = document.getElementById('toggle-sub');
+  if (goHomeOn && area) {
+    sub.textContent = `Showing orders towards ${shortName(area.name)}`;
+  } else {
+    sub.textContent = 'Show all orders';
+  }
+}
+
+// ===================== ORDER GENERATION =====================
+function generateOrder() {
+  const pickIdx = Math.floor(Math.random() * LOCATIONS.length);
+  let dropIdx = Math.floor(Math.random() * LOCATIONS.length);
+  while (dropIdx === pickIdx) dropIdx = Math.floor(Math.random() * LOCATIONS.length);
+
+  const pickup = LOCATIONS[pickIdx];
+  const drop = LOCATIONS[dropIdx];
+  const restaurant = RESTAURANTS[Math.floor(Math.random() * RESTAURANTS.length)];
+
+  const tripDist = haversine(pickup.lat, pickup.lng, drop.lat, drop.lng);
+  const pickupDist = distToArea(pickup.lat, pickup.lng);
+  const dropDist = distToArea(drop.lat, drop.lng);
+  const towards = dropDist < pickupDist;
+  const homeGain = pickupDist - dropDist;
+
+  const basePay = 25 + Math.round(tripDist * 12);
+  const bonus = towards ? Math.round(Math.random() * 10 + 5) : 0;
+  const earnings = basePay + bonus;
+  const mins = Math.round(3 + tripDist * 5 + Math.random() * 4);
+
+  orderIdCounter++;
+  return {
+    id: `RO${orderIdCounter}`,
+    restaurant, pickup, drop,
+    tripDist: tripDist.toFixed(1),
+    towards,
+    homeGain: homeGain.toFixed(1),
+    earnings, bonus, eta: mins,
+  };
+}
+
+function generateOrders() {
+  orders = [];
+  for (let i = 0; i < 8; i++) orders.push(generateOrder());
+  sortOrders();
+}
+
+function sortOrders() {
+  orders.sort((a, b) => {
+    if (a.towards !== b.towards) return a.towards ? -1 : 1;
+    return b.earnings - a.earnings;
+  });
+}
+
+function addNewOrder() {
+  orders.unshift(generateOrder());
+  sortOrders();
+  if (orders.length > 12) orders = orders.slice(0, 12);
+  renderStats();
+  renderOrders();
+}
+
+// ===================== RENDER ORDERS =====================
+function renderStats() {
+  const visible = goHomeOn ? orders.filter(o => o.towards) : orders;
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-d">
+      <div class="sv">${visible.length}</div>
+      <div class="sl">${goHomeOn ? 'Homeward' : 'Available'}</div>
+    </div>
+    <div class="stat-d">
+      <div class="sv" style="color:var(--green)">₹${totalEarnings}</div>
+      <div class="sl">Earned</div>
+    </div>
+    <div class="stat-d">
+      <div class="sv">${acceptedCount}</div>
+      <div class="sl">Trips Done</div>
+    </div>
+    <div class="stat-d">
+      <div class="sv"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.5s infinite;"></span></div>
+      <div class="sl">Online</div>
+    </div>
+  `;
+}
+
+function renderOrders() {
+  const container = document.getElementById('orders-container');
+  const towards = orders.filter(o => o.towards);
+  const away = orders.filter(o => !o.towards);
+  let html = '';
+
+  if (towards.length > 0) {
+    const area = getActiveArea();
+    const label = area ? shortName(area.name) : 'Home';
+    html += `<div class="section-lbl">🏠 Towards ${label} <span class="cnt">${towards.length}</span></div>`;
+    towards.forEach((o, i) => { html += orderHTML(o, i * 40); });
+  }
+
+  if (!goHomeOn && away.length > 0) {
+    html += `<div class="section-lbl" style="margin-top:8px;">📍 Other Orders <span class="cnt">${away.length}</span></div>`;
+    away.forEach((o, i) => { html += orderHTML(o, (towards.length + i) * 40); });
+  }
+
+  if (goHomeOn && towards.length === 0) {
+    html = `<div class="empty-state-dark">
+      <div class="es-icon">🏠</div>
+      <p>No homeward orders right now.<br>New orders appear every few seconds — hang tight!</p>
+    </div>`;
+  }
+
+  if (!goHomeOn && orders.length === 0) {
+    html = `<div class="empty-state-dark">
+      <div class="es-icon">📭</div>
+      <p>No orders right now.<br>Stay online — new orders are on the way!</p>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+
+  container.querySelectorAll('.o-btn.accept').forEach(btn => {
+    btn.addEventListener('click', () => acceptOrder(btn.dataset.id));
+  });
+  container.querySelectorAll('.o-btn.decline').forEach(btn => {
+    btn.addEventListener('click', () => declineOrder(btn.dataset.id));
+  });
+}
+
+function orderHTML(o, delay) {
+  const cls = o.towards ? 'towards' : 'away';
+  const chip = o.towards
+    ? `<span class="o-chip closer">🏠 ${o.homeGain} km closer</span>`
+    : `<span class="o-chip farther">↗ ${Math.abs(parseFloat(o.homeGain)).toFixed(1)} km farther</span>`;
+
+  return `
+    <div class="o-card ${cls} fade-in" data-id="${o.id}" style="animation-delay:${delay}ms">
+      <div class="o-top">
+        <div><div class="o-id">${o.id} · ${o.restaurant}</div></div>
+        <div class="o-earn">₹${o.earnings}${o.bonus > 0 ? ` <small>+₹${o.bonus} bonus</small>` : ''}</div>
+      </div>
+      <div class="o-route">
+        <div class="o-dots">
+          <div class="d pk"></div><div class="ln"></div><div class="d dr"></div>
+        </div>
+        <div class="o-pts">
+          <div class="o-pt"><div class="o-pl">Pickup</div><div class="o-pa">${o.pickup.name}</div></div>
+          <div class="o-pt"><div class="o-pl">Drop-off</div><div class="o-pa">${o.drop.name}</div></div>
+        </div>
+      </div>
+      <div class="o-meta">
+        <span class="o-chip">📏 ${o.tripDist} km</span>
+        <span class="o-chip">⏱ ${o.eta} min</span>
+        ${chip}
+      </div>
+      <div class="o-actions">
+        <button class="o-btn decline" data-id="${o.id}">Decline</button>
+        <button class="o-btn accept" data-id="${o.id}">Accept</button>
+      </div>
+      <div class="timer-bar"></div>
+    </div>
+  `;
+}
+
+function acceptOrder(id) {
+  const order = orders.find(o => o.id === id);
+  if (!order) return;
+  acceptedCount++;
+  totalEarnings += order.earnings;
+  orders = orders.filter(o => o.id !== id);
+  renderStats();
+  renderOrders();
+  showToast(`Accepted ${order.id} · ₹${order.earnings} earned!`);
+}
+
+function declineOrder(id) {
+  const card = document.querySelector(`.o-card[data-id="${id}"]`);
+  if (card) {
+    card.style.transition = 'opacity 0.3s, max-height 0.4s, margin 0.3s, padding 0.3s';
+    card.style.opacity = '0';
+    card.style.maxHeight = '0';
+    card.style.marginBottom = '0';
+    card.style.padding = '0 16px';
+    card.style.overflow = 'hidden';
+    setTimeout(() => {
+      orders = orders.filter(o => o.id !== id);
+      renderStats();
+      renderOrders();
+    }, 400);
+  }
+}
+
+// ===================== INIT =====================
+renderSavedAreas();
+showPage('gta-page');
+</script>
+</body>
+</html>

@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Rapido - Captain Home</title>
+<style>
+  :root {
+    --pink: #FF6B9D;
+    --pink-light: #FFF0F5;
+    --pink-bg: #FFE4EE;
+    --pink-card: #FFDCE8;
+    --yellow: #FFC107;
+    --yellow-dark: #F5A623;
+    --green: #00C853;
+    --green-dim: rgba(0,200,83,0.12);
+    --red: #FF5252;
+    --red-dim: rgba(255,82,82,0.1);
+    --blue: #448AFF;
+    --gray-50: #FAFAFA;
+    --gray-100: #F5F5F5;
+    --gray-200: #EEEEEE;
+    --gray-300: #E0E0E0;
+    --gray-400: #BDBDBD;
+    --gray-600: #757575;
+    --gray-800: #333333;
+    --gray-900: #212121;
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+    color: var(--gray-900);
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .max-w { max-width: 480px; margin: 0 auto; }
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: block; }
+
+  /* ============================================================
+     SCREEN 1 — HOME
+     ============================================================ */
+  #home-page { background: #f5f5f5; }
+
+  /* Top bar */
+  .home-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    position: sticky; top: 0; z-index: 10;
+    gap: 8px;
+  }
+  .home-topbar .hamburger {
+    width: 36px; height: 36px; border: none; background: none;
+    font-size: 22px; color: var(--gray-800); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Single sliding toggle — Normal On Duty ← thumb → Go Home */
+  .mode-switch {
+    display: flex; align-items: center; gap: 8px;
+    flex: 1; justify-content: center;
+  }
+  .mode-switch .mode-label {
+    font-size: 11px; font-weight: 700; white-space: nowrap;
+    transition: color 0.3s;
+  }
+  .mode-switch .mode-label.left { color: var(--green); }
+  .mode-switch .mode-label.right { color: var(--gray-400); }
+  .mode-switch.go-home .mode-label.left { color: var(--gray-400); }
+  .mode-switch.go-home .mode-label.right { color: var(--pink); }
+
+  .mode-track {
+    position: relative; width: 52px; height: 30px;
+    background: var(--green); border-radius: 15px;
+    cursor: pointer; transition: background 0.3s;
+    flex-shrink: 0;
+  }
+  .mode-switch.go-home .mode-track { background: var(--pink); }
+  .mode-track .mode-thumb {
+    position: absolute; top: 3px; left: 3px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #fff; transition: transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .mode-switch.go-home .mode-track .mode-thumb {
+    transform: translateX(22px);
+  }
+
+  /* Active home strip below topbar */
+  .home-active-strip {
+    display: none; align-items: center; gap: 8px;
+    padding: 8px 16px; background: var(--pink-light);
+    border-bottom: 1px solid var(--pink-card);
+    font-size: 12px; font-weight: 600; color: var(--pink);
+  }
+  .home-active-strip.show { display: flex; }
+  .home-active-strip .strip-pulse {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--pink);
+    animation: pulse 1.5s infinite; flex-shrink: 0;
+  }
+
+  .home-topbar .right-icons {
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  }
+  .home-topbar .gta-icon-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #FFF0F5; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .home-topbar .bell-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--gray-100); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; font-size: 18px; color: var(--gray-600);
+  }
+  .bell-btn .badge {
+    position: absolute; top: 0px; right: 0px;
+    background: var(--red); color: #fff; font-size: 8px;
+    font-weight: 700; padding: 1px 3px; border-radius: 6px;
+    min-width: 14px; text-align: center;
+  }
+
+  /* GTA heart pin SVG */
+  .gta-pin {
+    display: inline-block; width: 28px; height: 28px;
+  }
+  .gta-pin-sm { width: 20px; height: 20px; }
+  .gta-pin-lg { width: 48px; height: 48px; }
+  .gta-pin-xl { width: 60px; height: 60px; }
+
+  /* Collapsible arrow */
+  .collapse-arrow {
+    text-align: center; padding: 4px 0;
+    background: #fff; border-bottom: 1px solid var(--gray-200);
+    cursor: pointer;
+  }
+  .collapse-arrow svg {
+    width: 24px; height: 24px; color: var(--gray-400);
+  }
+
+  /* Story circles */
+  .story-row {
+    display: flex; gap: 4px; padding: 16px 12px 12px;
+    overflow-x: auto; background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    scrollbar-width: none;
+  }
+  .story-row::-webkit-scrollbar { display: none; }
+  .story-item {
+    display: flex; flex-direction: column; align-items: center;
+    min-width: 68px; gap: 6px; cursor: pointer;
+  }
+  .story-circle {
+    width: 64px; height: 64px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .story-circle.gems {
+    background: #F3E8FF; border: 2px solid #D8B4FE;
+  }
+  .story-circle.follow {
+    background: linear-gradient(135deg, #F59E0B, #EC4899, #8B5CF6);
+    padding: 2px;
+  }
+  .story-circle.follow .inner {
+    width: 100%; height: 100%; border-radius: 50%;
+    background: #fff; display: flex; align-items: center; justify-content: center;
+  }
+  .story-circle.orders {
+    background: linear-gradient(135deg, #FB923C, #F59E0B);
+    padding: 2px;
+  }
+  .story-circle.orders .inner {
+    width: 100%; height: 100%; border-radius: 50%;
+    background: #FEF3C7; display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+  }
+  .story-circle.swipe {
+    background: #FEF3C7; border: 2px solid #FDE68A;
+  }
+  .story-circle.guess {
+    background: #FFF0F5; border: 2px solid #FECDD3;
+  }
+  .story-badge {
+    position: absolute; top: -2px; right: -2px;
+    background: #7C3AED; color: #fff; font-size: 10px;
+    font-weight: 700; width: 18px; height: 18px;
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; border: 2px solid #fff;
+  }
+  .story-label {
+    font-size: 11px; font-weight: 500; color: var(--gray-600);
+    text-align: center;
+  }
+
+  /* Only for you banner */
+  .only-for-you {
+    text-align: center; padding: 14px 16px 8px;
+    font-size: 14px; font-weight: 600; color: var(--gray-600);
+  }
+
+  /* Promo card */
+  .promo-card {
+    margin: 8px 16px; border-radius: 16px;
+    overflow: hidden; cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    background: var(--pink-light);
+    position: relative; min-height: 300px;
+  }
+  .promo-card .promo-content {
+    padding: 24px 20px;
+    text-align: center;
+  }
+  .promo-card .promo-subtitle {
+    font-size: 16px; color: var(--gray-800);
+    margin-bottom: 4px;
+  }
+  .promo-card .promo-title {
+    font-size: 24px; font-weight: 800; color: var(--gray-900);
+    margin-bottom: 16px;
+  }
+  .promo-card .promo-illustration {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 20px 20px; gap: 12px;
+  }
+  .promo-captain {
+    width: 120px; height: 120px; border-radius: 16px;
+    background: linear-gradient(135deg, #2D6A4F, #40916C);
+    display: flex; align-items: flex-end; justify-content: center;
+    overflow: hidden; position: relative;
+  }
+  .promo-captain .captain-emoji {
+    font-size: 80px; line-height: 1;
+  }
+
+  /* Quick actions */
+  .quick-actions {
+    padding: 20px 16px 12px;
+  }
+  .quick-actions h3 {
+    font-size: 16px; font-weight: 700; color: var(--gray-900);
+    margin-bottom: 12px;
+  }
+  .quick-tile {
+    width: 100px; padding: 16px 12px; border-radius: 12px;
+    background: #fff; border: 1px solid var(--gray-200);
+    text-align: center; cursor: pointer;
+  }
+  .quick-tile .tile-icon {
+    font-size: 24px; margin-bottom: 6px; font-weight: 700;
+    color: var(--blue);
+  }
+  .quick-tile .tile-label {
+    font-size: 12px; font-weight: 600; color: var(--gray-800);
+    line-height: 1.3;
+  }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff; border-top: 1px solid var(--gray-200);
+    padding: 8px 0; padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    z-index: 20;
+  }
+  .bottom-nav .max-w {
+    display: flex; align-items: center; justify-content: space-around;
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 2px; cursor: pointer; padding: 4px 20px;
+    border: none; background: none; font-family: inherit;
+  }
+  .nav-item .nav-icon {
+    font-size: 20px; color: var(--gray-400);
+  }
+  .nav-item .nav-label {
+    font-size: 11px; font-weight: 600; color: var(--gray-400);
+  }
+  .nav-item.active .nav-icon { color: var(--gray-900); }
+  .nav-item.active .nav-label { color: var(--gray-900); }
+
+  .nav-item.orders-pill-nav {
+    flex-direction: row; gap: 6px;
+    background: var(--gray-900); color: #fff;
+    border-radius: 24px; padding: 10px 20px;
+  }
+  .nav-item.orders-pill-nav .nav-icon { color: #fff; }
+  .nav-item.orders-pill-nav .nav-label { color: #fff; }
+
+  /* ============================================================
+     SCREEN 2 — GTA SETTINGS
+     ============================================================ */
+  #gta-page { background: var(--gray-50); }
+
+  .gta-topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .gta-topbar .back-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: none; background: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--gray-800);
+  }
+  .gta-topbar .back-btn:active { background: var(--gray-100); }
+  .gta-topbar h1 { font-size: 18px; font-weight: 700; }
+
+  /* Pink banner */
+  .gta-banner {
+    background: linear-gradient(135deg, #FFB6C1 0%, #FFDDE5 100%);
+    margin: 0; padding: 24px 20px;
+    display: flex; align-items: center; gap: 14px;
+    color: var(--gray-900);
+  }
+  .gta-banner .banner-text { flex: 1; }
+  .gta-banner .banner-text p {
+    font-size: 16px; font-weight: 600; line-height: 1.4;
+    color: var(--gray-900);
+  }
+  .gta-banner .know-more {
+    font-size: 14px; color: var(--blue); font-weight: 500;
+    margin-top: 8px; display: flex; align-items: center; gap: 4px;
+    cursor: pointer;
+  }
+  .gta-banner .banner-icon {
+    flex-shrink: 0;
+  }
+
+  /* Checkbox row */
+  .gta-checkbox-row {
+    margin: 16px 16px 0; padding: 16px;
+    background: #fff; border-radius: 12px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer;
+  }
+  .checkbox-custom {
+    width: 22px; height: 22px; border-radius: 4px;
+    border: 2px solid var(--gray-400); background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s;
+  }
+  .checkbox-custom.checked {
+    background: var(--pink); border-color: var(--pink);
+  }
+  .checkbox-custom .check-icon {
+    color: #fff; font-size: 14px; font-weight: 700;
+    display: none;
+  }
+  .checkbox-custom.checked .check-icon { display: block; }
+  .gta-checkbox-row span { font-size: 15px; font-weight: 500; color: var(--gray-800); }
+
+  /* Section header */
+  .gta-section-header {
+    padding: 24px 16px 12px;
+    font-size: 14px; font-weight: 700; color: var(--gray-800);
+  }
+  .gta-section-header small {
+    font-weight: 400; color: var(--gray-600); font-size: 13px;
+  }
+
+  /* Area card */
+  .area-card {
+    background: #fff; margin: 0 16px 12px; border-radius: 12px;
+    padding: 16px; border: 1.5px solid var(--gray-300);
+    transition: border-color 0.2s;
+  }
+  .area-card.active { border-color: var(--gray-800); }
+  .area-card .area-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px; gap: 10px;
+  }
+  .area-card .area-name-row {
+    display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;
+  }
+  .area-card .area-tag-icon {
+    font-size: 18px; flex-shrink: 0;
+  }
+  .area-card .area-name {
+    font-size: 15px; font-weight: 600; color: var(--gray-900);
+    flex: 1; min-width: 0;
+  }
+
+  /* Yellow/Gray toggle switch */
+  .switch-area {
+    position: relative; width: 48px; height: 28px;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .switch-area input { display: none; }
+  .switch-area .slider-a {
+    position: absolute; inset: 0; background: var(--gray-300);
+    border-radius: 14px; transition: background 0.3s;
+  }
+  .switch-area .slider-a::after {
+    content: ''; position: absolute; width: 22px; height: 22px;
+    background: #fff; border-radius: 50%; top: 3px; left: 3px;
+    transition: transform 0.3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .switch-area input:checked + .slider-a { background: var(--yellow); }
+  .switch-area input:checked + .slider-a::after { transform: translateX(20px); }
+
+  /* Tag pills on area card — set Home or Office */
+  .area-tag-row {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 10px;
+  }
+  .area-tag-pill {
+    display: flex; align-items: center; gap: 4px;
+    padding: 5px 12px; border-radius: 16px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    border: 1.5px solid var(--gray-300); background: #fff;
+    color: var(--gray-600); transition: all 0.2s;
+  }
+  .area-tag-pill:active { transform: scale(0.95); }
+  .area-tag-pill.selected-home {
+    background: #FFF3E0; border-color: #E65100; color: #E65100;
+  }
+  .area-tag-pill.selected-office {
+    background: #E3F2FD; border-color: #1565C0; color: #1565C0;
+  }
+
+  .area-card .area-delete-row {
+    display: flex; align-items: center; gap: 6px;
+    cursor: pointer; color: var(--gray-600); font-size: 13px;
+  }
+  .area-card .area-delete-row:active { opacity: 0.6; }
+  .area-card .area-delete-row .trash-icon { font-size: 14px; }
+
+  /* Add area button (fixed bottom) */
+  .gta-bottom-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--gray-100); padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--gray-200);
+    z-index: 10;
+  }
+  .btn-add-area {
+    width: 100%; padding: 16px; border: 1.5px solid var(--gray-900);
+    border-radius: 12px; background: #fff; cursor: pointer;
+    font-size: 16px; font-weight: 700; color: var(--gray-900);
+    text-align: center;
+  }
+  .btn-add-area:active { background: var(--gray-100); }
+
+  /* ============================================================
+     SCREEN 3 — ORDER CARD
+     ============================================================ */
+  #order-page { background: #f5f5f5; }
+
+  .order-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .order-topbar h1 {
+    font-size: 20px; font-weight: 800; color: var(--gray-900);
+  }
+  .sound-toggle {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 24px;
+    background: var(--gray-200); border: none;
+    font-size: 13px; font-weight: 600; color: var(--gray-600);
+    cursor: pointer;
+  }
+  .sound-toggle .speaker-icon { font-size: 16px; }
+
+  /* Go Home Mode bar */
+  .go-home-bar {
+    margin: 12px 16px 0; padding: 14px 16px;
+    background: #fff; border-radius: 12px;
+    border: 1px solid var(--gray-200);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .go-home-bar .ghm-left {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .go-home-bar .ghm-icon {
+    font-size: 20px;
+  }
+  .go-home-bar .ghm-text {
+    font-size: 15px; font-weight: 700; color: var(--gray-900);
+  }
+  .go-home-bar .ghm-sub {
+    font-size: 12px; color: var(--gray-600); margin-top: 2px;
+  }
+  .go-home-bar.active {
+    border-color: var(--green);
+    background: #F0FFF4;
+  }
+  .go-home-bar.active .ghm-text { color: #2E7D32; }
+
+  .switch-ghm {
+    position: relative; width: 48px; height: 28px;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .switch-ghm input { display: none; }
+  .switch-ghm .slider-ghm {
+    position: absolute; inset: 0; background: var(--gray-300);
+    border-radius: 14px; transition: background 0.3s;
+  }
+  .switch-ghm .slider-ghm::after {
+    content: ''; position: absolute; width: 22px; height: 22px;
+    background: #fff; border-radius: 50%; top: 3px; left: 3px;
+    transition: transform 0.3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .switch-ghm input:checked + .slider-ghm { background: var(--green); }
+  .switch-ghm input:checked + .slider-ghm::after { transform: translateX(20px); }
+
+  /* Home location strip on order page */
+  .order-home-strip {
+    display: none; align-items: center; gap: 10px;
+    margin: 10px 16px 0; padding: 10px 14px;
+    background: #E8F5E9; border-radius: 10px;
+    font-size: 13px; font-weight: 600; color: #2E7D32;
+  }
+  .order-home-strip.show { display: flex; }
+  .order-home-strip .strip-pulse {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+    animation: pulse 1.5s infinite; flex-shrink: 0;
+  }
+  .order-home-strip .strip-label { flex: 1; }
+
+  /* Home closer badge on order card */
+  .home-closer-badge {
+    display: none; align-items: center; gap: 6px;
+    margin: 0 20px 16px; padding: 8px 14px;
+    background: var(--green-dim); border-radius: 10px;
+    font-size: 13px; font-weight: 700; color: #2E7D32;
+  }
+  .home-closer-badge.show { display: flex; }
+
+  /* Order layout */
+  .order-layout {
+    padding: 12px 16px 120px;
+  }
+
+  /* Left fare sidebar + Go To pill */
+  .order-meta-row {
+    display: flex; align-items: flex-start; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .fare-sidebar {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 2px;
+  }
+  .fare-sidebar .gta-pin-icon {
+    position: relative;
+  }
+  .fare-sidebar .fare-amount {
+    font-size: 18px; font-weight: 800; color: var(--gray-900);
+  }
+  .fare-sidebar .fare-bonus {
+    font-size: 14px; font-weight: 700; color: var(--green);
+  }
+  .goto-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 16px; border-radius: 20px;
+    background: var(--pink-light); border: 1px solid var(--pink);
+    font-size: 13px; font-weight: 700; color: var(--pink);
+    cursor: pointer;
+  }
+
+  /* Order card */
+  .order-card {
+    background: #fff; border-radius: 16px;
+    overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1px solid var(--gray-200);
+  }
+  .order-card-header {
+    background: linear-gradient(135deg, #FFD6E0, #FFEEF2);
+    padding: 16px 20px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+  }
+  .order-card-header .order-type {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 4px;
+  }
+  .bike-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #fff; border-radius: 12px; padding: 4px 10px;
+    font-size: 12px; font-weight: 600; color: var(--gray-800);
+  }
+  .bike-chip .bike-icon { font-size: 14px; }
+  .order-card-header .order-fare {
+    font-size: 28px; font-weight: 800; color: var(--gray-900);
+  }
+  .order-card-header .order-fare .cash-label {
+    font-size: 14px; font-weight: 500; color: var(--gray-600);
+  }
+  .order-card-header .heart-pin {
+    flex-shrink: 0;
+  }
+
+  /* Route section */
+  .order-route {
+    padding: 20px;
+  }
+  .route-point {
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .route-dots {
+    display: flex; flex-direction: column; align-items: center;
+    min-width: 16px; padding-top: 4px;
+  }
+  .route-dots .dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .route-dots .dot.pickup { background: var(--gray-900); }
+  .route-dots .dot.drop { background: var(--gray-900); }
+  .route-dots .line {
+    width: 2px; height: 40px; background: var(--gray-300);
+    margin: 4px 0;
+  }
+  .route-info { flex: 1; }
+  .route-info .route-dist {
+    font-size: 16px; font-weight: 800; color: var(--gray-900);
+    margin-bottom: 4px;
+  }
+  .route-info .route-addr {
+    font-size: 13px; color: var(--gray-600); line-height: 1.4;
+  }
+  .route-spacer { height: 16px; }
+
+  /* Bottom action row */
+  .order-actions {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 20px 20px;
+  }
+  .btn-minus {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 2px solid var(--gray-300); background: #fff;
+    font-size: 24px; color: var(--gray-400); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-minus:active { background: var(--gray-100); }
+  .btn-accept {
+    flex: 1; padding: 16px; border: none; border-radius: 28px;
+    background: var(--yellow); font-size: 17px; font-weight: 800;
+    color: var(--gray-900); cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .btn-accept:active { transform: scale(0.97); }
+
+  /* ============================================================
+     ADD AREA PAGE (modal)
+     ============================================================ */
+  #add-area-page { background: var(--gray-50); }
+
+  .add-topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .add-topbar .back-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: none; background: var(--gray-100); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--gray-800);
+  }
+  .add-topbar h1 { font-size: 18px; font-weight: 600; }
+
+  .tag-section { padding: 20px 16px 12px; }
+  .tag-section label {
+    font-size: 13px; font-weight: 600; color: var(--gray-600);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    display: block; margin-bottom: 12px;
+  }
+  .tag-options { display: flex; gap: 10px; }
+  .tag-option {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 8px; padding: 16px 12px;
+    border-radius: 12px; border: 2px solid var(--gray-200);
+    background: #fff; cursor: pointer; transition: all 0.2s;
+  }
+  .tag-option:active { transform: scale(0.97); }
+  .tag-option.selected { border-color: var(--pink); background: var(--pink-light); }
+  .tag-option .tag-emoji { font-size: 28px; }
+  .tag-option .tag-name { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+
+  .search-section { padding: 0 16px; }
+  .search-section label {
+    font-size: 13px; font-weight: 600; color: var(--gray-600);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    display: block; margin-bottom: 8px;
+  }
+  .search-wrap { position: relative; }
+  .search-input {
+    width: 100%; padding: 14px 16px 14px 42px;
+    border: 1.5px solid var(--gray-300); border-radius: var(--radius-sm);
+    background: #fff; color: var(--gray-900); font-size: 15px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--pink); }
+  .search-input::placeholder { color: var(--gray-400); }
+  .search-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 16px; color: var(--gray-400);
+  }
+  .search-results {
+    margin-top: 6px; border-radius: var(--radius-sm);
+    background: #fff; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid var(--gray-200); display: none;
+  }
+  .search-results.show { display: block; }
+  .search-result-item {
+    padding: 14px 16px; cursor: pointer;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex; align-items: center; gap: 12px;
+    transition: background 0.15s;
+  }
+  .search-result-item:last-child { border-bottom: none; }
+  .search-result-item:active { background: var(--gray-100); }
+  .search-result-item .loc-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--gray-100); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 14px; color: var(--gray-600); flex-shrink: 0;
+  }
+  .search-result-item .loc-info { flex: 1; }
+  .search-result-item .loc-name { font-size: 14px; font-weight: 500; }
+  .search-result-item .loc-area { font-size: 12px; color: var(--gray-600); margin-top: 1px; }
+
+  .selected-location {
+    margin: 16px; padding: 16px; background: #fff;
+    border-radius: 12px; border: 1.5px solid var(--green);
+    display: none; gap: 12px; align-items: center;
+  }
+  .selected-location.show { display: flex; }
+  .selected-location .sel-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--green-dim); color: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .selected-location .sel-info { flex: 1; }
+  .selected-location .sel-name { font-size: 15px; font-weight: 600; }
+  .selected-location .sel-area { font-size: 12px; color: var(--gray-600); }
+  .selected-location .sel-clear {
+    border: none; background: none; font-size: 18px;
+    color: var(--gray-400); cursor: pointer; padding: 4px;
+  }
+
+  .save-area-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff; padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--gray-200); z-index: 10;
+  }
+  .btn-save-area {
+    width: 100%; padding: 15px; border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    background: var(--pink); color: #fff;
+    transition: transform 0.1s, opacity 0.2s;
+  }
+  .btn-save-area:active { transform: scale(0.97); }
+  .btn-save-area:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+  /* ============================================================
+     SHARED
+     ============================================================ */
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px);
+    padding: 14px 24px; border-radius: 12px;
+    font-weight: 600; font-size: 14px; z-index: 100;
+    transition: transform 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--green); color: #fff; }
+  .toast.info { background: var(--pink); color: #fff; }
+
+  /* Confirm dialog */
+  .confirm-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 50; display: none; align-items: flex-end;
+    justify-content: center;
+  }
+  .confirm-overlay.show { display: flex; }
+  .confirm-sheet {
+    background: #fff; width: 100%; max-width: 480px;
+    border-radius: 20px 20px 0 0; padding: 24px 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .confirm-sheet h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .confirm-sheet p { font-size: 14px; color: var(--gray-600); margin-bottom: 20px; }
+  .confirm-btns { display: flex; gap: 10px; }
+  .confirm-btns button {
+    flex: 1; padding: 13px; border-radius: 12px; font-size: 15px;
+    font-weight: 600; border: none; cursor: pointer;
+  }
+  .confirm-btns .c-cancel { background: var(--gray-100); color: var(--gray-800); }
+  .confirm-btns .c-delete { background: var(--red); color: #fff; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in { animation: fadeInUp 0.3s ease both; }
+</style>
+</head>
+<body>
+
+<!-- GTA Heart Pin SVG template -->
+<svg style="display:none">
+  <symbol id="gta-heart-pin" viewBox="0 0 60 80">
+    <path d="M30 78C30 78 4 48 4 28C4 13.6 15.6 2 30 2C44.4 2 56 13.6 56 28C56 48 30 78 30 78Z" fill="#FF6B9D"/>
+    <path d="M30 18C26 18 19 22 19 30C19 40 30 48 30 48C30 48 41 40 41 30C41 22 34 18 30 18Z" fill="#fff"/>
+  </symbol>
+</svg>
+
+<!-- ==================== PAGE 1: HOME ==================== -->
+<div id="home-page" class="screen active">
+  <div class="home-topbar max-w">
+    <button class="hamburger">&#9776;</button>
+    <div class="mode-switch" id="mode-switch">
+      <span class="mode-label left">On Duty</span>
+      <div class="mode-track" id="mode-track">
+        <div class="mode-thumb" id="mode-thumb"></div>
+      </div>
+      <span class="mode-label right">Go Home</span>
+    </div>
+    <div class="right-icons">
+      <button class="gta-icon-btn" id="home-gta-btn">
+        <svg class="gta-pin" viewBox="0 0 60 80"><use href="#gta-heart-pin"/></svg>
+      </button>
+      <button class="bell-btn">
+        &#128276;
+        <span class="badge">9+</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Active home strip -->
+  <div class="home-active-strip max-w" id="home-active-strip">
+    <span class="strip-pulse"></span>
+    <span id="home-strip-text">Go Home Mode active</span>
+  </div>
+
+  <div class="max-w">
+    <!-- Collapse arrow -->
+    <div class="collapse-arrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+
+    <!-- Story circles -->
+    <div class="story-row">
+      <div class="story-item">
+        <div class="story-circle gems">
+          <span style="font-size:32px">&#128142;</span>
+          <span class="story-badge">1</span>
+        </div>
+        <span class="story-label">Gems</span>
+      </div>
+      <div class="story-item">
+        <div class="story-circle follow">
+          <div class="inner">
+            <span style="font-size:26px">&#128247;</span>
+          </div>
+        </div>
+        <span class="story-label">Follow</span>
+      </div>
+      <div class="story-item">
+        <div class="story-circle orders">
+          <div class="inner">
+            <span style="font-size:28px">&#128100;</span>
+          </div>
+        </div>
+        <span class="story-label">Orders</span>
+      </div>
+      <div class="story-item">
+        <div class="story-circle swipe">
+          <span style="font-size:32px">&#128071;</span>
+        </div>
+        <span class="story-label">Swipe</span>
+      </div>
+      <div class="story-item" id="home-guess-btn">
+        <div class="story-circle guess">
+          <svg class="gta-pin" viewBox="0 0 60 80"><use href="#gta-heart-pin"/></svg>
+        </div>
+        <span class="story-label">GUESS?</span>
+      </div>
+    </div>
+
+    <!-- Only for you -->
+    <div class="only-for-you">&#127788; Only for you &#127788;</div>
+
+    <!-- Promo card -->
+    <div class="promo-card" id="home-promo-card">
+      <div class="promo-content">
+        <div class="promo-subtitle">Orders to home with</div>
+        <div class="promo-title">Go to Area</div>
+        <div class="promo-illustration">
+          <svg class="gta-pin-xl" viewBox="0 0 60 80"><use href="#gta-heart-pin"/></svg>
+          <div class="promo-captain">
+            <span class="captain-emoji">&#128104;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="quick-actions">
+      <h3>Quick actions</h3>
+      <div class="quick-tile">
+        <div class="tile-icon">&#2309;<br><span style="font-size:18px;color:var(--blue);">A</span></div>
+        <div class="tile-label">Change<br>Language</div>
+      </div>
+    </div>
+
+    <!-- spacer for bottom nav -->
+    <div style="height:80px"></div>
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="bottom-nav">
+    <div class="max-w">
+      <button class="nav-item active" id="nav-home">
+        <span class="nav-icon">&#127968;</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item orders-pill-nav" id="nav-orders">
+        <span class="nav-icon">&#128196;</span>
+        <span class="nav-label">Orders</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 2: GTA SETTINGS ==================== -->
+<div id="gta-page" class="screen">
+  <div class="gta-topbar max-w">
+    <button class="back-btn" id="gta-back-btn">&#8592;</button>
+    <h1>Go to Area</h1>
+  </div>
+
+  <div class="max-w">
+    <!-- Pink banner -->
+    <div class="gta-banner">
+      <div class="banner-text">
+        <p>Get orders to your home or anywhere you want to go</p>
+        <div class="know-more">&#9432; Know more</div>
+      </div>
+      <div class="banner-icon">
+        <svg class="gta-pin-lg" viewBox="0 0 60 80"><use href="#gta-heart-pin"/></svg>
+      </div>
+    </div>
+
+    <!-- Checkbox -->
+    <div class="gta-checkbox-row" id="gta-only-row">
+      <div class="checkbox-custom" id="gta-only-check">
+        <span class="check-icon">&#10003;</span>
+      </div>
+      <span>See only Go to Area orders</span>
+    </div>
+
+    <!-- Go Home Mode toggle on GTA page -->
+    <div class="go-home-bar" id="gta-ghm-bar" style="margin:12px 16px 0;">
+      <div class="ghm-left">
+        <span class="ghm-icon">&#127968;</span>
+        <div>
+          <div class="ghm-text">Go Home Mode</div>
+          <div class="ghm-sub" id="gta-ghm-sub">Get orders towards home</div>
+        </div>
+      </div>
+      <label class="switch-ghm">
+        <input type="checkbox" id="gta-ghm-toggle">
+        <span class="slider-ghm"></span>
+      </label>
+    </div>
+
+    <!-- Saved areas -->
+    <div class="gta-section-header">
+      Saved drop areas <small>(Switch ON up to 1 areas)</small>
+    </div>
+    <div id="saved-areas-list"></div>
+
+    <!-- spacer for bottom button -->
+    <div style="height:80px"></div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="gta-bottom-bar">
+    <div class="max-w">
+      <button class="btn-add-area" id="add-area-btn">Add new area</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 3: ORDER CARD ==================== -->
+<div id="order-page" class="screen">
+  <div class="order-topbar max-w">
+    <h1>1 Order</h1>
+    <button class="sound-toggle" id="sound-toggle">
+      <span class="speaker-icon">&#128264;</span>
+      <span>OFF</span>
+    </button>
+  </div>
+
+  <div class="max-w">
+    <!-- Go Home Mode toggle -->
+    <div class="go-home-bar" id="go-home-bar">
+      <div class="ghm-left">
+        <span class="ghm-icon">&#127968;</span>
+        <div>
+          <div class="ghm-text">Go Home Mode</div>
+          <div class="ghm-sub" id="ghm-sub">Show all orders</div>
+        </div>
+      </div>
+      <label class="switch-ghm">
+        <input type="checkbox" id="go-home-toggle">
+        <span class="slider-ghm"></span>
+      </label>
+    </div>
+
+    <!-- Home location active strip -->
+    <div class="order-home-strip" id="order-home-strip">
+      <span class="strip-pulse"></span>
+      <span class="strip-label" id="order-home-label">Going to Home</span>
+    </div>
+
+    <div class="order-layout">
+      <!-- Meta row: fare sidebar + go to pill -->
+      <div class="order-meta-row">
+        <div class="fare-sidebar">
+          <div class="fare-sidebar-pin">
+            <svg width="40" height="52" viewBox="0 0 60 80"><use href="#gta-heart-pin"/></svg>
+          </div>
+          <div class="fare-amount" id="order-fare-main">&#8377;33</div>
+          <div class="fare-bonus" id="order-fare-bonus">+&#8377;10</div>
+        </div>
+        <div class="goto-pill">
+          <svg width="16" height="20" viewBox="0 0 60 80"><use href="#gta-heart-pin"/></svg>
+          Go To
+        </div>
+      </div>
+
+      <!-- Order card -->
+      <div class="order-card" id="main-order-card">
+        <div class="order-card-header">
+          <div>
+            <div class="order-type">
+              <span class="bike-chip"><span class="bike-icon">&#128690;</span> Bike</span>
+            </div>
+            <div class="order-fare">
+              <span id="card-fare">&#8377;33 + &#8377;10</span>
+              <span class="cash-label"> (Cash)</span>
+            </div>
+          </div>
+          <div class="heart-pin">
+            <svg width="44" height="56" viewBox="0 0 60 80"><use href="#gta-heart-pin"/></svg>
+          </div>
+        </div>
+
+        <div class="order-route">
+          <!-- Pickup -->
+          <div class="route-point">
+            <div class="route-dots">
+              <div class="dot pickup"></div>
+              <div class="line"></div>
+            </div>
+            <div class="route-info">
+              <div class="route-dist" id="pickup-dist">4.5 Km</div>
+              <div class="route-addr" id="pickup-addr">
+                <strong>Koramangala 1st Block</strong> - 234, Jakkasandra Extension, Koramangala, 560034
+              </div>
+            </div>
+          </div>
+          <div class="route-spacer"></div>
+          <!-- Drop -->
+          <div class="route-point">
+            <div class="route-dots">
+              <div class="dot drop"></div>
+            </div>
+            <div class="route-info">
+              <div class="route-dist" id="drop-dist">3.4 Km</div>
+              <div class="route-addr" id="drop-addr">
+                <strong>5th Block-Adugodi</strong> - CrazzyShuttlers @ KPBA, 5th Cross Road, KHB Colony, 5th Block, Koramangala
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Home closer badge -->
+        <div class="home-closer-badge" id="home-closer-badge">
+          &#127968; <span id="home-closer-text">2.1 km closer to home</span>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="order-actions">
+          <button class="btn-minus" id="order-decline">&#8722;</button>
+          <button class="btn-accept" id="order-accept">Accept</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- spacer for bottom nav -->
+    <div style="height:80px"></div>
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="bottom-nav">
+    <div class="max-w">
+      <button class="nav-item" id="order-nav-home">
+        <span class="nav-icon">&#127968;</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item orders-pill-nav" id="order-nav-orders">
+        <span class="nav-icon" style="transform:rotate(180deg)">&#10548;</span>
+        <span class="nav-label">Orders</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 4: ADD AREA ==================== -->
+<div id="add-area-page" class="screen">
+  <div class="add-topbar max-w">
+    <button class="back-btn" id="add-back-btn">&#8592;</button>
+    <h1>Add New Area</h1>
+  </div>
+
+  <div class="max-w">
+    <div class="tag-section">
+      <label>Tag this location</label>
+      <div class="tag-options">
+        <div class="tag-option selected" data-tag="home">
+          <span class="tag-emoji">&#127968;</span>
+          <span class="tag-name">Home</span>
+        </div>
+        <div class="tag-option" data-tag="office">
+          <span class="tag-emoji">&#127970;</span>
+          <span class="tag-name">Office</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-section">
+      <label>Search location</label>
+      <div class="search-wrap">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" class="search-input" id="area-search"
+          placeholder="Search Koramangala, BTM, HSR..." autocomplete="off" />
+      </div>
+      <div class="search-results" id="area-results"></div>
+    </div>
+
+    <div class="selected-location" id="sel-preview">
+      <div class="sel-icon">&#10003;</div>
+      <div class="sel-info">
+        <div class="sel-name" id="sel-name"></div>
+        <div class="sel-area">Bangalore, Karnataka</div>
+      </div>
+      <button class="sel-clear" id="sel-clear">&times;</button>
+    </div>
+  </div>
+
+  <div class="save-area-bar">
+    <div class="max-w">
+      <button class="btn-save-area" id="save-area-btn" disabled>Save Area</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Confirm dialog -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-sheet">
+    <h3>Delete area?</h3>
+    <p id="confirm-text">Are you sure you want to remove this saved area?</p>
+    <div class="confirm-btns">
+      <button class="c-cancel" id="confirm-cancel">Cancel</button>
+      <button class="c-delete" id="confirm-delete">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const LOCATIONS = [
+  { name: "Koramangala 1st Block", lat: 12.9352, lng: 77.6245 },
+  { name: "Koramangala 2nd Block", lat: 12.9340, lng: 77.6260 },
+  { name: "Koramangala 3rd Block", lat: 12.9330, lng: 77.6220 },
+  { name: "Koramangala 4th Block", lat: 12.9365, lng: 77.6195 },
+  { name: "Koramangala 5th Block", lat: 12.9346, lng: 77.6150 },
+  { name: "Koramangala 6th Block", lat: 12.9355, lng: 77.6180 },
+  { name: "Koramangala 7th Block", lat: 12.9308, lng: 77.6205 },
+  { name: "Koramangala 8th Block", lat: 12.9280, lng: 77.6230 },
+  { name: "Forum Mall, Koramangala", lat: 12.9344, lng: 77.6101 },
+  { name: "Jyoti Nivas College Road", lat: 12.9349, lng: 77.6168 },
+  { name: "Sony World Junction", lat: 12.9345, lng: 77.6106 },
+  { name: "Madiwala", lat: 12.9226, lng: 77.6174 },
+  { name: "BTM Layout 1st Stage", lat: 12.9166, lng: 77.6101 },
+  { name: "BTM Layout 2nd Stage", lat: 12.9120, lng: 77.6165 },
+  { name: "HSR Layout Sector 1", lat: 12.9116, lng: 77.6389 },
+  { name: "HSR Layout Sector 4", lat: 12.9080, lng: 77.6420 },
+  { name: "Indiranagar 100 Ft Road", lat: 12.9784, lng: 77.6408 },
+  { name: "Indiranagar 12th Main", lat: 12.9719, lng: 77.6412 },
+  { name: "Domlur", lat: 12.9610, lng: 77.6387 },
+  { name: "Ejipura", lat: 12.9500, lng: 77.6250 },
+  { name: "Jayanagar 4th Block", lat: 12.9250, lng: 77.5838 },
+  { name: "JP Nagar 6th Phase", lat: 12.9010, lng: 77.5855 },
+  { name: "Silk Board Junction", lat: 12.9177, lng: 77.6233 },
+  { name: "Marathahalli Bridge", lat: 12.9591, lng: 77.7009 },
+  { name: "Whitefield Main Road", lat: 12.9698, lng: 77.7500 },
+  { name: "MG Road", lat: 12.9756, lng: 77.6068 },
+  { name: "Brigade Road", lat: 12.9716, lng: 77.6070 },
+  { name: "Bellandur Gate", lat: 12.9260, lng: 77.6762 },
+  { name: "Sarjapur Road, Wipro Junction", lat: 12.9109, lng: 77.6835 },
+  { name: "Electronic City Phase 1", lat: 12.8456, lng: 77.6603 },
+];
+
+const STREETS = [
+  "234, Jakkasandra Extension", "56, 1st Cross Road", "78, 2nd Main Road",
+  "12, 4th Cross, KHB Colony", "99, 5th Block Main Road", "45, Church Street",
+  "167, 80 Feet Road", "23, Hosur Main Road", "8, Outer Ring Road",
+  "34, Old Madras Road"
+];
+
+// ===================== STATE =====================
+let savedAreas = [
+  { id: 1, tag: 'home', name: '7th Block, Koramangala', lat: 12.9308, lng: 77.6205, active: true },
+  { id: 2, tag: 'office', name: '1st Sector, HSR Layout', lat: 12.9116, lng: 77.6389, active: false },
+];
+let gtaOnlyFilter = false;
+let goHomeMode = false;
+let deleteTargetId = null;
+
+// Add area state
+let editTag = 'home';
+let editLocation = null;
+
+// Order state
+let currentOrder = null;
+let soundOn = false;
+
+// ===================== HELPERS =====================
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 +
+    Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function getHomeArea() {
+  return savedAreas.find(a => a.tag === 'home') || null;
+}
+
+function getActiveArea() {
+  return savedAreas.find(a => a.active) || null;
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===================== NAVIGATION =====================
+function showPage(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// Home → GTA settings (via heart icon or promo card)
+document.getElementById('home-gta-btn').addEventListener('click', () => showPage('gta-page'));
+document.getElementById('home-promo-card').addEventListener('click', () => showPage('gta-page'));
+document.getElementById('home-guess-btn').addEventListener('click', () => showPage('gta-page'));
+
+// GTA settings → Home (back)
+document.getElementById('gta-back-btn').addEventListener('click', () => showPage('home-page'));
+
+// Home → Orders
+document.getElementById('nav-orders').addEventListener('click', () => {
+  generateNewOrder();
+  showPage('order-page');
+});
+document.getElementById('nav-home').addEventListener('click', () => showPage('home-page'));
+
+// Order page nav
+document.getElementById('order-nav-home').addEventListener('click', () => showPage('home-page'));
+document.getElementById('order-nav-orders').addEventListener('click', () => {
+  generateNewOrder();
+  renderOrder();
+});
+
+// ===================== MODE TOGGLE (Normal On Duty ↔ Go Home) =====================
+let isOnDuty = true;
+const modeSwitch = document.getElementById('mode-switch');
+const modeTrack = document.getElementById('mode-track');
+const modeThumb = document.getElementById('mode-thumb');
+
+modeTrack.addEventListener('click', function() {
+  const newMode = !goHomeMode;
+  modeSwitch.classList.toggle('go-home', newMode);
+  // thumb has no icon, just slides
+  setGoHomeMode(newMode);
+});
+
+// ===================== SOUND TOGGLE =====================
+document.getElementById('sound-toggle').addEventListener('click', function() {
+  soundOn = !soundOn;
+  this.querySelector('span:last-child').textContent = soundOn ? 'ON' : 'OFF';
+  this.querySelector('.speaker-icon').innerHTML = soundOn ? '&#128266;' : '&#128264;';
+});
+
+// ===================== GTA SETTINGS PAGE =====================
+function renderSavedAreas() {
+  const list = document.getElementById('saved-areas-list');
+  if (savedAreas.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;color:#BDBDBD;font-size:14px;">No saved areas yet.</div>';
+    return;
+  }
+
+  list.innerHTML = savedAreas.map(a => {
+    const icon = a.tag === 'home' ? '&#127968;' : a.tag === 'office' ? '&#127970;' : '&#128205;';
+    const homeSelected = a.tag === 'home' ? 'selected-home' : '';
+    const officeSelected = a.tag === 'office' ? 'selected-office' : '';
+    return `
+    <div class="area-card ${a.active ? 'active' : ''}" data-id="${a.id}">
+      <div class="area-top">
+        <div class="area-name-row">
+          <span class="area-tag-icon">${icon}</span>
+          <div class="area-name">${a.name}, Bengaluru</div>
+        </div>
+        <label class="switch-area">
+          <input type="checkbox" ${a.active ? 'checked' : ''} data-id="${a.id}" class="area-toggle">
+          <span class="slider-a"></span>
+        </label>
+      </div>
+      <div class="area-tag-row">
+        <div class="area-tag-pill ${homeSelected}" data-id="${a.id}" data-tag="home">
+          &#127968; Home
+        </div>
+        <div class="area-tag-pill ${officeSelected}" data-id="${a.id}" data-tag="office">
+          &#127970; Office
+        </div>
+      </div>
+      <div class="area-delete-row" data-id="${a.id}">
+        <span class="trash-icon">&#128465;</span> Delete
+      </div>
+    </div>
+    `;
+  }).join('');
+
+  // Bind toggles
+  list.querySelectorAll('.area-toggle').forEach(toggle => {
+    toggle.addEventListener('change', (e) => {
+      const id = parseInt(e.target.dataset.id);
+      savedAreas.forEach(a => a.active = (a.id === id && e.target.checked));
+      renderSavedAreas();
+    });
+  });
+
+  // Bind tag pills (Home / Office)
+  list.querySelectorAll('.area-tag-pill').forEach(pill => {
+    pill.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = parseInt(pill.dataset.id);
+      const newTag = pill.dataset.tag;
+      const area = savedAreas.find(a => a.id === id);
+      if (area) {
+        area.tag = newTag;
+        renderSavedAreas();
+        showToast(`Tagged as ${newTag}`, 'success');
+      }
+    });
+  });
+
+  // Bind deletes
+  list.querySelectorAll('.area-delete-row').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteTargetId = parseInt(btn.dataset.id);
+      const area = savedAreas.find(a => a.id === deleteTargetId);
+      document.getElementById('confirm-text').textContent =
+        `Remove "${area.name}" from your saved areas?`;
+      document.getElementById('confirm-overlay').classList.add('show');
+    });
+  });
+}
+
+// GTA-only checkbox
+document.getElementById('gta-only-row').addEventListener('click', () => {
+  gtaOnlyFilter = !gtaOnlyFilter;
+  document.getElementById('gta-only-check').classList.toggle('checked', gtaOnlyFilter);
+});
+
+// Add area button
+document.getElementById('add-area-btn').addEventListener('click', () => {
+  editTag = 'home';
+  editLocation = null;
+  document.getElementById('area-search').value = '';
+  document.getElementById('area-results').classList.remove('show');
+  document.getElementById('sel-preview').classList.remove('show');
+  document.getElementById('save-area-btn').disabled = true;
+  document.querySelectorAll('.tag-option').forEach(t => {
+    t.classList.toggle('selected', t.dataset.tag === 'home');
+  });
+  showPage('add-area-page');
+});
+
+// Delete confirm
+document.getElementById('confirm-cancel').addEventListener('click', () => {
+  document.getElementById('confirm-overlay').classList.remove('show');
+  deleteTargetId = null;
+});
+document.getElementById('confirm-delete').addEventListener('click', () => {
+  if (deleteTargetId != null) {
+    savedAreas = savedAreas.filter(a => a.id !== deleteTargetId);
+    renderSavedAreas();
+    showToast('Area removed', 'info');
+  }
+  document.getElementById('confirm-overlay').classList.remove('show');
+  deleteTargetId = null;
+});
+
+// ===================== ADD AREA PAGE =====================
+document.querySelectorAll('.tag-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    editTag = opt.dataset.tag;
+    document.querySelectorAll('.tag-option').forEach(t =>
+      t.classList.toggle('selected', t.dataset.tag === editTag));
+  });
+});
+
+const areaSearch = document.getElementById('area-search');
+const areaResults = document.getElementById('area-results');
+
+areaSearch.addEventListener('input', () => {
+  const q = areaSearch.value.toLowerCase().trim();
+  if (q.length < 2) { areaResults.classList.remove('show'); return; }
+  const matches = LOCATIONS.filter(l => l.name.toLowerCase().includes(q)).slice(0, 6);
+  if (!matches.length) { areaResults.classList.remove('show'); return; }
+
+  areaResults.innerHTML = matches.map(l => `
+    <div class="search-result-item" data-name="${l.name}" data-lat="${l.lat}" data-lng="${l.lng}">
+      <div class="loc-icon">&#128205;</div>
+      <div class="loc-info">
+        <div class="loc-name">${l.name}</div>
+        <div class="loc-area">Bangalore, Karnataka</div>
+      </div>
+    </div>
+  `).join('');
+  areaResults.classList.add('show');
+
+  areaResults.querySelectorAll('.search-result-item').forEach(item => {
+    item.addEventListener('click', () => {
+      editLocation = {
+        name: item.dataset.name,
+        lat: parseFloat(item.dataset.lat),
+        lng: parseFloat(item.dataset.lng),
+      };
+      areaSearch.value = editLocation.name;
+      areaResults.classList.remove('show');
+      document.getElementById('sel-name').textContent = editLocation.name;
+      document.getElementById('sel-preview').classList.add('show');
+      document.getElementById('save-area-btn').disabled = false;
+    });
+  });
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-wrap') && !e.target.closest('.search-results')) {
+    areaResults.classList.remove('show');
+  }
+});
+
+document.getElementById('sel-clear').addEventListener('click', () => {
+  editLocation = null;
+  areaSearch.value = '';
+  document.getElementById('sel-preview').classList.remove('show');
+  document.getElementById('save-area-btn').disabled = true;
+});
+
+document.getElementById('save-area-btn').addEventListener('click', () => {
+  if (!editLocation) return;
+  const newId = Date.now();
+  savedAreas.forEach(a => a.active = false);
+  savedAreas.push({
+    id: newId,
+    tag: editTag,
+    name: editLocation.name,
+    lat: editLocation.lat,
+    lng: editLocation.lng,
+    active: true,
+  });
+  renderSavedAreas();
+  showPage('gta-page');
+  showToast(`${editLocation.name} saved as ${editTag}!`);
+});
+
+document.getElementById('add-back-btn').addEventListener('click', () => showPage('gta-page'));
+
+// ===================== GO HOME MODE =====================
+const goHomeToggle = document.getElementById('go-home-toggle');   // Orders page
+const gtaGhmToggle = document.getElementById('gta-ghm-toggle');   // GTA page
+
+function setGoHomeMode(on) {
+  goHomeMode = on;
+
+  if (goHomeMode) {
+    // Auto-activate the home-tagged area
+    const homeArea = getHomeArea();
+    if (homeArea) {
+      savedAreas.forEach(a => a.active = (a.id === homeArea.id));
+      renderSavedAreas();
+    }
+  }
+
+  syncAllGoHomeUI();
+  if (currentOrder) renderOrder();
+}
+
+// Bind orders + GTA toggle handlers
+goHomeToggle.addEventListener('change', () => setGoHomeMode(goHomeToggle.checked));
+gtaGhmToggle.addEventListener('change', () => setGoHomeMode(gtaGhmToggle.checked));
+
+function syncAllGoHomeUI() {
+  // Sync checkbox toggles (Orders + GTA pages)
+  goHomeToggle.checked = goHomeMode;
+  gtaGhmToggle.checked = goHomeMode;
+
+  const homeArea = getHomeArea();
+  const areaName = homeArea ? homeArea.name : null;
+  const onSub = areaName ? `Filtering towards ${areaName}` : 'No home area saved';
+  const offSub = 'Get orders towards home';
+
+  // --- Home page single toggle + strip ---
+  const modeSwitchEl = document.getElementById('mode-switch');
+  const modeThumbEl = document.getElementById('mode-thumb');
+  const homeStrip = document.getElementById('home-active-strip');
+  const homeStripText = document.getElementById('home-strip-text');
+
+  modeSwitchEl.classList.toggle('go-home', goHomeMode);
+  // thumb synced via CSS class only
+
+  if (goHomeMode && areaName) {
+    homeStrip.classList.add('show');
+    homeStripText.textContent = `🏠 Go Home Mode · ${areaName}`;
+  } else if (goHomeMode) {
+    homeStrip.classList.add('show');
+    homeStripText.textContent = '🏠 Go Home Mode active · No home area saved';
+  } else {
+    homeStrip.classList.remove('show');
+  }
+
+  // --- Orders page bar ---
+  const orderBar = document.getElementById('go-home-bar');
+  const orderSub = document.getElementById('ghm-sub');
+  const orderStrip = document.getElementById('order-home-strip');
+  orderBar.classList.toggle('active', goHomeMode);
+  orderSub.textContent = goHomeMode ? onSub : 'Show all orders';
+  if (goHomeMode && areaName) {
+    document.getElementById('order-home-label').textContent = `🏠 Going to ${areaName}`;
+    orderStrip.classList.add('show');
+  } else {
+    orderStrip.classList.remove('show');
+  }
+
+  // --- GTA page bar ---
+  const gtaBar = document.getElementById('gta-ghm-bar');
+  const gtaSub = document.getElementById('gta-ghm-sub');
+  gtaBar.classList.toggle('active', goHomeMode);
+  gtaSub.textContent = goHomeMode ? onSub : offSub;
+}
+
+// ===================== ORDER PAGE =====================
+function generateNewOrder() {
+  const pick = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
+  let drop = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
+  while (drop.name === pick.name) drop = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
+
+  const baseFare = 25 + Math.floor(Math.random() * 20);
+  const bonus = 5 + Math.floor(Math.random() * 15);
+  const pickDist = (2 + Math.random() * 6).toFixed(1);
+  const dropDist = (1 + Math.random() * 5).toFixed(1);
+  const pickStreet = STREETS[Math.floor(Math.random() * STREETS.length)];
+  const dropStreet = STREETS[Math.floor(Math.random() * STREETS.length)];
+
+  currentOrder = { pick, drop, baseFare, bonus, pickDist, dropDist, pickStreet, dropStreet };
+  renderOrder();
+}
+
+function renderOrder() {
+  if (!currentOrder) return;
+  const o = currentOrder;
+  document.getElementById('order-fare-main').innerHTML = `&#8377;${o.baseFare}`;
+  document.getElementById('order-fare-bonus').innerHTML = `+&#8377;${o.bonus}`;
+  document.getElementById('card-fare').innerHTML = `&#8377;${o.baseFare} + &#8377;${o.bonus}`;
+  document.getElementById('pickup-dist').textContent = `${o.pickDist} Km`;
+  document.getElementById('pickup-addr').innerHTML =
+    `<strong>${o.pick.name}</strong> - ${o.pickStreet}, ${o.pick.name.split(',')[0]}, 560034`;
+  document.getElementById('drop-dist').textContent = `${o.dropDist} Km`;
+  document.getElementById('drop-addr').innerHTML =
+    `<strong>${o.drop.name}</strong> - ${o.dropStreet}, ${o.drop.name.split(',')[0]}, Koramangala`;
+
+  // Home closer badge
+  const badge = document.getElementById('home-closer-badge');
+  const badgeText = document.getElementById('home-closer-text');
+  const homeArea = getHomeArea();
+
+  if (goHomeMode && homeArea) {
+    const dropToHome = haversine(o.drop.lat, o.drop.lng, homeArea.lat, homeArea.lng);
+    const pickToHome = haversine(o.pick.lat, o.pick.lng, homeArea.lat, homeArea.lng);
+    const closer = pickToHome - dropToHome;
+    if (closer > 0) {
+      badgeText.textContent = `${closer.toFixed(1)} km closer to home`;
+      badge.classList.add('show');
+    } else {
+      badgeText.textContent = `${Math.abs(closer).toFixed(1)} km farther from home`;
+      badge.classList.add('show');
+    }
+  } else {
+    badge.classList.remove('show');
+  }
+
+  syncAllGoHomeUI();
+}
+
+// Accept / Decline
+document.getElementById('order-accept').addEventListener('click', () => {
+  showToast(`Order accepted! ₹${currentOrder.baseFare + currentOrder.bonus} earned`);
+  setTimeout(() => {
+    generateNewOrder();
+  }, 1000);
+});
+
+document.getElementById('order-decline').addEventListener('click', () => {
+  const card = document.getElementById('main-order-card');
+  card.style.transition = 'opacity 0.3s, transform 0.3s';
+  card.style.opacity = '0';
+  card.style.transform = 'translateX(-50px)';
+  setTimeout(() => {
+    generateNewOrder();
+    card.style.transition = 'none';
+    card.style.opacity = '1';
+    card.style.transform = 'translateX(0)';
+  }, 400);
+});
+
+// ===================== INIT =====================
+renderSavedAreas();
+syncAllGoHomeUI();
+showPage('home-page');
+</script>
+</body>
+</html>
